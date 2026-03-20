@@ -381,14 +381,14 @@ input:focus{border-color:var(--amid)}input::placeholder{color:var(--tdim)}
       <input type="password" id="ok" placeholder="sk-..." style="font-size:.82rem;margin-bottom:8px">
       <label class="fl">Modell</label>
       <div class="msel" id="ms-o">
-        <div class="mopt on" data-m="gpt-4o">gpt-4o<br><span>Empfohlen</span></div>
-        <div class="mopt" data-m="gpt-4o-mini">4o-mini<br><span>Schnell</span></div>
-        <div class="mopt" data-m="gpt-4-turbo">4-turbo<br><span>Stark</span></div>
+        <div class="mopt on" data-m="gpt-5.4">gpt-5.4<br><span>Empfohlen</span></div>
+        <div class="mopt" data-m="gpt-5.4-mini">5.4-mini<br><span>Schnell</span></div>
+        <div class="mopt" data-m="gpt-5.4-nano">5.4-nano<br><span>Sparend</span></div>
       </div>
       <label class="fl" style="margin-top:8px">Eigenes Modell (überschreibt Auswahl)</label>
-      <input type="text" id="ok-model" placeholder="z.B. gpt-4.5-preview oder o3" style="font-size:.82rem">
+      <input type="text" id="ok-model" placeholder="z.B. gpt-4o, o3, o4-mini" style="font-size:.82rem">
       <div style="font-size:.68rem;color:var(--tdim);margin-top:4px">
-        Aktuelle OpenAI Modelle: gpt-4o, gpt-4.5-preview, o3, o4-mini
+        Aktuelle OpenAI Modelle: gpt-5.4, gpt-5.4-mini, gpt-5.4-nano, gpt-4o, o3
       </div>
     </div>
     <div id="pf-gemini" class="prov-f" style="display:none">
@@ -806,7 +806,7 @@ let cfg=LS.g('cfg',{
   answerTime:0,voteTime:30,ttsAuto:false,
   llm:{provider:'none',
     anthropic:{key:'',model:'claude-sonnet-4-20250514'},
-    openai:{key:'',model:'gpt-4o'},
+    openai:{key:'',model:'gpt-5.4'},
     gemini:{key:'',model:'gemini-2.0-flash'}}
 });
 let usedW=LS.g('used',[]);
@@ -1435,13 +1435,23 @@ async function callAnthropic(prompt){
 }
 async function callOpenAI(prompt){
   const c=cfg.llm.openai;
-  const oModel=c.custom||c.model||'gpt-4o';
-  const r=await fetch('https://api.openai.com/v1/chat/completions',{method:'POST',
-    headers:{'Content-Type':'application/json','Authorization':'Bearer '+c.key},
-    body:JSON.stringify({model:oModel,max_tokens:600,
-      messages:[{role:'system',content:'Respond with valid JSON only.'},{role:'user',content:prompt}]})});
-  const d=await r.json();if(d.error)throw new Error(d.error.message);
-  return(d.choices?.[0]?.message?.content||'').replace(/\`\`\`json|\`\`\`/g,'').trim();
+  const oModel=c.custom||c.model||'gpt-5.4';
+  // Try new Responses API first, fallback to Chat Completions for older models
+  try{
+    const r=await fetch('https://api.openai.com/v1/responses',{method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+c.key},
+      body:JSON.stringify({model:oModel,instructions:'Respond with valid JSON only.',input:prompt})});
+    const d=await r.json();if(d.error)throw new Error(d.error.message);
+    return(d.output_text||d.output?.[0]?.content?.[0]?.text||'').replace(/```json|```/g,'').trim();
+  }catch(e){
+    // Fallback to old Chat Completions API
+    const r=await fetch('https://api.openai.com/v1/chat/completions',{method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+c.key},
+      body:JSON.stringify({model:oModel,max_tokens:600,
+        messages:[{role:'system',content:'Respond with valid JSON only.'},{role:'user',content:prompt}]})});
+    const d=await r.json();if(d.error)throw new Error(d.error.message);
+    return(d.choices?.[0]?.message?.content||'').replace(/```json|```/g,'').trim();
+  }
 }
 async function callGemini(prompt){
   const c=cfg.llm.gemini;
@@ -1525,7 +1535,7 @@ function lsUI(){
   document.getElementById('ok').value=llm.openai?.key||'';
   document.getElementById('gk').value=llm.gemini?.key||'';
   sSt('ms-a',llm.anthropic?.model||'claude-sonnet-4-20250514');
-  sSt('ms-o',llm.openai?.model||'gpt-4o');
+  sSt('ms-o',llm.openai?.model||'gpt-5.4');
   sSt('ms-g',llm.gemini?.model||'gemini-2.0-flash');
   document.getElementById('ak-model').value=llm.anthropic?.custom||'';
   document.getElementById('ok-model').value=llm.openai?.custom||'';
@@ -1548,7 +1558,7 @@ function saveCfg(){
       model:document.querySelector('#ms-a .mopt.on')?.dataset.m||'claude-sonnet-4-20250514',
       custom:document.getElementById('ak-model').value.trim()},
     openai:{key:document.getElementById('ok').value.trim(),
-      model:document.querySelector('#ms-o .mopt.on')?.dataset.m||'gpt-4o',
+      model:document.querySelector('#ms-o .mopt.on')?.dataset.m||'gpt-5.4',
       custom:document.getElementById('ok-model').value.trim()},
     gemini:{key:document.getElementById('gk').value.trim(),
       model:document.querySelector('#ms-g .mopt.on')?.dataset.m||'gemini-2.0-flash',
