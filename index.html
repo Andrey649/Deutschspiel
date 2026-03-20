@@ -1,0 +1,1787 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<title>DeutschSpiel</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,400&family=Outfit:wght@300;400;500;600&display=swap');
+:root{
+  --bg:#0f0d0a;--sur:#1a1714;--sur2:#231f1b;--brd:rgba(255,255,255,0.08);
+  --gold:#d4a843;--gdim:rgba(212,168,67,0.15);--gmid:rgba(212,168,67,0.35);
+  --blu:#4a7fd4;--bdim:rgba(74,127,212,0.15);--bmid:rgba(74,127,212,0.35);
+  --txt:#f0ead8;--tdim:rgba(240,234,216,0.45);--tmid:rgba(240,234,216,0.7);
+  --grn:#5a9a6a;--gdim2:rgba(90,154,106,0.15);--red:#c05040;
+  --r:16px;--rs:10px;
+  --accent:var(--gold);--adim:var(--gdim);--amid:var(--gmid);
+}
+.mode-gespräch{--accent:var(--blu);--adim:var(--bdim);--amid:var(--bmid);}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--txt);}
+#app{height:100vh;overflow:hidden;position:relative;
+  background-image:radial-gradient(ellipse 60% 40% at 15% 0%,rgba(212,168,67,0.05) 0%,transparent 60%)}
+#app.mode-gespräch{
+  background-image:radial-gradient(ellipse 60% 40% at 15% 0%,rgba(74,127,212,0.06) 0%,transparent 60%)}
+.scr{position:absolute;inset:0;display:flex;flex-direction:column;transform:translateX(100%);
+  transition:transform .3s cubic-bezier(.4,0,.2,1);background:var(--bg);z-index:1;overflow:hidden}
+.scr.active{transform:translateX(0);z-index:2}
+.scr.prev{transform:translateX(-25%)}
+.topbar{flex-shrink:0;display:flex;align-items:center;justify-content:space-between;
+  padding:12px 16px;border-bottom:1px solid var(--brd);background:var(--bg)}
+.tb{font-family:'Playfair Display',serif;font-size:1rem;font-weight:700;color:var(--accent)}
+.body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:16px 16px 80px}
+.body::-webkit-scrollbar{display:none}
+/* Logo */
+.logo{font-family:'Playfair Display',serif;font-size:2.6rem;font-weight:900;line-height:1;color:var(--txt)}
+.logo em{color:var(--accent);font-style:normal}
+.logo-s{font-size:.65rem;font-weight:300;letter-spacing:.28em;text-transform:uppercase;color:var(--tdim);margin-top:5px}
+/* Cards */
+.card{background:var(--sur);border:1px solid var(--brd);border-radius:var(--r);padding:18px;margin-bottom:12px}
+.ct{font-size:.6rem;font-weight:600;letter-spacing:.22em;text-transform:uppercase;color:var(--accent);margin-bottom:12px}
+/* Inputs */
+input[type=text],input[type=password]{width:100%;background:var(--sur2);border:1px solid var(--brd);
+  border-radius:var(--rs);padding:13px 14px;font-family:'Outfit',sans-serif;font-size:.95rem;
+  color:var(--txt);outline:none;transition:border-color .2s;-webkit-appearance:none}
+input:focus{border-color:var(--amid)}input::placeholder{color:var(--tdim)}
+.fl{font-size:.6rem;font-weight:500;letter-spacing:.15em;text-transform:uppercase;color:var(--tdim);margin-bottom:6px;display:block}
+/* Buttons */
+.btn{width:100%;padding:14px;border:none;border-radius:var(--rs);font-family:'Outfit',sans-serif;
+  font-size:.92rem;font-weight:600;cursor:pointer;transition:all .18s;display:flex;
+  align-items:center;justify-content:center;gap:8px;-webkit-appearance:none;touch-action:manipulation}
+.bp{background:var(--accent);color:#0f0d0a}.bp:active{filter:brightness(.85);transform:scale(.98)}
+.bd{background:var(--sur2);color:var(--txt);border:1px solid var(--brd)}.bd:active{border-color:var(--amid)}
+.bg{background:var(--grn);color:#fff}.bg:active{background:#4a8a5a;transform:scale(.98)}
+.br{background:var(--red);color:#fff}.br:active{transform:scale(.98)}
+.bgh{background:transparent;color:var(--tmid);border:1px solid var(--brd)}.bgh:active{border-color:var(--amid);color:var(--accent)}
+.btn:disabled{opacity:.38;pointer-events:none}
+.btn-sm{padding:9px 14px;font-size:.78rem;width:auto}
+.btn-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+/* Mode selector */
+.mode-cards{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:16px 0}
+.mode-card{background:var(--sur2);border:1.5px solid var(--brd);border-radius:var(--r);
+  padding:20px 12px;text-align:center;cursor:pointer;transition:all .2s;touch-action:manipulation}
+.mode-card:active{transform:scale(.97)}
+.mode-card.sel-w{border-color:var(--gold);background:var(--gdim)}
+.mode-card.sel-g{border-color:var(--blu);background:var(--bdim)}
+.mode-ico{font-size:2rem;margin-bottom:8px}
+.mode-nm{font-size:.9rem;font-weight:600;color:var(--txt)}
+.mode-ds{font-size:.7rem;color:var(--tdim);margin-top:4px;line-height:1.4}
+.mode-card.sel-w .mode-nm{color:var(--gold)}
+.mode-card.sel-g .mode-nm{color:var(--blu)}
+/* Segment */
+.seg{display:flex;background:var(--sur2);border-radius:var(--rs);padding:3px;gap:2px}
+.sopt{flex:1;padding:9px 4px;text-align:center;font-size:.72rem;font-weight:500;color:var(--tdim);
+  border-radius:7px;cursor:pointer;transition:all .15s;user-select:none;line-height:1.3}
+.sopt.on{background:var(--accent);color:#0f0d0a;font-weight:600}
+.sdesc{margin-top:8px;font-size:.72rem;color:var(--tdim);line-height:1.5;min-height:36px}
+/* Players */
+.pi{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;
+  background:var(--sur2);border-radius:var(--rs);border:1px solid var(--brd);margin-bottom:8px}
+.pi.me{border-left:3px solid var(--accent)}.pi.trn{border-color:var(--amid);background:var(--adim)}
+.pl{display:flex;align-items:center;gap:10px}
+.av{width:32px;height:32px;border-radius:50%;background:var(--adim);border:1px solid var(--amid);
+  display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:600;color:var(--accent);flex-shrink:0}
+.pn{font-size:.88rem;font-weight:500}
+.ps{font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:700;color:var(--accent)}
+.tag{display:inline-block;padding:2px 8px;border-radius:20px;font-size:.58rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase}
+.ta{background:var(--adim);color:var(--accent);border:1px solid var(--amid)}
+.td2{background:rgba(255,255,255,.04);color:var(--tdim)}
+/* Room code */
+.rcode{font-family:'Playfair Display',serif;font-size:2.6rem;font-weight:700;letter-spacing:.2em;
+  color:var(--accent);text-align:center;padding:20px;background:var(--adim);
+  border-radius:var(--r);border:1px dashed var(--amid)}
+/* Word card */
+.wcard{background:var(--sur);border:1px solid var(--amid);border-radius:var(--r);
+  padding:26px 20px;text-align:center;margin:12px 0;position:relative;overflow:hidden}
+.wcard::before{content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse at 50% 0%,rgba(212,168,67,.07) 0%,transparent 70%)}
+.wde{font-family:'Playfair Display',serif;font-size:2rem;font-weight:900;color:var(--accent);line-height:1.1;position:relative}
+.wart{font-size:.9rem;color:var(--tdim);display:block;margin-bottom:3px;position:relative}
+.wuk{font-size:.9rem;color:var(--tmid);margin-top:8px;font-weight:300;position:relative}
+.wbdg{display:flex;gap:6px;justify-content:center;margin-top:10px;flex-wrap:wrap;position:relative}
+/* Question card */
+.qcard{background:var(--sur);border:1.5px solid var(--amid);border-radius:var(--r);
+  padding:24px 20px;text-align:center;margin:12px 0;position:relative;overflow:hidden}
+.qcard::before{content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse at 50% 0%,rgba(74,127,212,.07) 0%,transparent 70%)}
+.qde{font-family:'Playfair Display',serif;font-size:1.2rem;font-weight:700;color:var(--txt);line-height:1.4;position:relative}
+.quk{font-size:.82rem;color:var(--tdim);margin-top:10px;font-style:italic;position:relative;display:none}
+.quk.show{display:block}
+/* Timer */
+.tring{width:42px;height:42px;border:2px solid var(--amid);border-radius:50%;background:var(--sur);
+  display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;
+  font-size:.95rem;font-weight:700;color:var(--accent);flex-shrink:0}
+.tring.wrn{color:#d4843a;border-color:rgba(212,132,58,.4)}
+.tring.dng{color:var(--red);border-color:rgba(192,80,64,.4);animation:pulse .6s infinite}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
+/* Guesser btns */
+.gbtn{display:flex;align-items:center;justify-content:space-between;width:100%;
+  padding:12px 14px;background:var(--sur2);border:1px solid var(--brd);border-radius:var(--rs);
+  color:var(--txt);font-family:'Outfit',sans-serif;font-size:.88rem;font-weight:500;
+  cursor:pointer;margin-bottom:8px;touch-action:manipulation}
+.gbtn:active,.gbtn.done{border-color:rgba(90,154,106,.4);background:var(--gdim2);color:var(--grn)}
+.gbtn.done{pointer-events:none}
+.gbtn .chk{display:none}.gbtn.done .chk{display:block}
+/* Score rows */
+.srow{display:flex;align-items:center;justify-content:space-between;
+  padding:10px 12px;background:var(--sur2);border-radius:var(--rs);margin-bottom:6px}
+.dl{font-family:'Playfair Display',serif;font-weight:700;font-size:1.1rem}
+.dp{color:var(--grn)}.dn{color:var(--red)}.dz{color:var(--tdim)}
+/* Stars */
+.stars{display:flex;justify-content:center;gap:10px;margin:16px 0}
+.star{font-size:2rem;cursor:pointer;transition:transform .15s;filter:grayscale(1);opacity:.4;touch-action:manipulation}
+.star.on{filter:none;opacity:1;transform:scale(1.1)}
+/* Answer badge */
+.abadge{text-align:center;padding:14px;background:var(--adim);border-radius:var(--r);
+  border:1px solid var(--amid);margin-bottom:12px}
+.aname{font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:700;color:var(--accent)}
+.albl{font-size:.65rem;color:var(--tdim);letter-spacing:.1em;text-transform:uppercase;margin-bottom:4px}
+/* Score reveal */
+.score-reveal{text-align:center;padding:24px 16px;background:var(--adim);border-radius:var(--r);border:1px solid var(--amid)}
+.score-num{font-family:'Playfair Display',serif;font-size:4rem;font-weight:900;color:var(--accent);line-height:1}
+/* Topic cards */
+.topic-card{background:var(--sur2);border:1.5px solid var(--brd);border-radius:var(--r);
+  padding:14px;margin-bottom:10px;cursor:pointer;transition:all .2s;touch-action:manipulation;position:relative}
+.topic-card.sel{border-color:var(--blu);background:var(--bdim)}
+.topic-card.sel::after{content:'✓';position:absolute;top:12px;right:14px;color:var(--blu);font-weight:700}
+.topic-de{font-family:'Playfair Display',serif;font-size:1rem;font-weight:700;color:var(--txt);line-height:1.3}
+.topic-uk{font-size:.78rem;color:var(--tdim);margin-top:5px;line-height:1.4}
+/* Prog bar */
+.pgbar{height:3px;background:var(--sur2);border-radius:2px;overflow:hidden;margin-bottom:16px}
+.pgfill{height:100%;background:var(--accent);border-radius:2px;transition:width .5s ease}
+/* Settings rows */
+.srow2{display:flex;align-items:center;justify-content:space-between;padding:11px 0;border-bottom:1px solid var(--brd)}
+.srow2:last-child{border-bottom:none}
+.sn{font-size:.88rem;font-weight:500}.sd{font-size:.7rem;color:var(--tdim);margin-top:2px}
+.tog{width:42px;height:24px;border-radius:12px;background:var(--sur2);border:1px solid var(--brd);
+  position:relative;cursor:pointer;transition:background .2s;flex-shrink:0}
+.tog.on{background:var(--accent);border-color:var(--accent)}
+.tog::after{content:'';position:absolute;top:3px;left:3px;width:16px;height:16px;
+  border-radius:50%;background:var(--tdim);transition:transform .2s,background .2s}
+.tog.on::after{transform:translateX(18px);background:#0f0d0a}
+.nrow{display:flex;align-items:center;gap:4px;background:var(--sur2);border:1px solid var(--brd);border-radius:var(--rs);padding:3px}
+.nbtn{width:34px;height:34px;border:none;background:var(--sur);color:var(--tmid);border-radius:7px;
+  font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;touch-action:manipulation}
+.nbtn:active{background:var(--adim);color:var(--accent)}
+.nval{flex:1;text-align:center;font-family:'Playfair Display',serif;font-size:1.2rem;font-weight:700;color:var(--accent)}
+/* LLM */
+.llm-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:8px 0}
+.llm-opt{background:var(--sur2);border:1.5px solid var(--brd);border-radius:var(--rs);
+  padding:11px 8px;text-align:center;cursor:pointer;transition:all .18s;touch-action:manipulation}
+.llm-opt.on{border-color:var(--gold);background:var(--gdim)}
+.llm-ico{font-size:1.2rem;margin-bottom:3px}
+.llm-nm{font-size:.78rem;font-weight:600;color:var(--txt)}.llm-opt.on .llm-nm{color:var(--gold)}
+.llm-ds{font-size:.64rem;color:var(--tdim);margin-top:1px}
+.prov-f{background:var(--sur2);border-radius:var(--rs);padding:12px;border:1px solid var(--brd);margin-top:6px}
+.msel{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-bottom:4px}
+.mopt{background:var(--sur);border:1.5px solid var(--brd);border-radius:7px;padding:7px 4px;
+  text-align:center;cursor:pointer;font-size:.67rem;font-weight:500;color:var(--tdim);
+  transition:all .15s;touch-action:manipulation;line-height:1.3}
+.mopt span{font-size:.57rem;opacity:.7;display:block;margin-top:1px}
+.mopt.on{border-color:var(--gold);color:var(--gold);background:var(--gdim)}
+/* Stats */
+.sgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.sbox{background:var(--sur2);border-radius:var(--rs);padding:12px;text-align:center;border:1px solid var(--brd)}
+.snum{font-family:'Playfair Display',serif;font-size:1.6rem;font-weight:700;color:var(--accent);line-height:1}
+.slbl{font-size:.65rem;color:var(--tdim);margin-top:3px}
+/* Misc */
+.wchip{display:inline-flex;gap:4px;padding:4px 9px;background:var(--sur2);border-radius:20px;border:1px solid var(--brd);font-size:.72rem;color:var(--tdim);margin:3px}
+.div{display:flex;align-items:center;gap:10px;color:var(--tdim);font-size:.72rem;margin:14px 0}
+.div::before,.div::after{content:'';flex:1;height:1px;background:var(--brd)}
+.dots span{display:inline-block;animation:db 1.2s ease-in-out infinite;font-size:1.3rem;color:var(--accent)}
+.dots span:nth-child(2){animation-delay:.2s}.dots span:nth-child(3){animation-delay:.4s}
+@keyframes db{0%,80%,100%{transform:translateY(0);opacity:.3}40%{transform:translateY(-7px);opacity:1}}
+.spin{width:20px;height:20px;border:2px solid rgba(212,168,67,.2);border-top-color:var(--accent);
+  border-radius:50%;animation:sp .7s linear infinite;display:inline-block}
+@keyframes sp{to{transform:rotate(360deg)}}
+.cbdg{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:20px;font-size:.68rem;font-weight:500}
+.cok{background:var(--gdim2);color:var(--grn);border:1px solid rgba(90,154,106,.3)}
+.cwt{background:var(--adim);color:var(--accent);border:1px solid var(--amid)}
+.cno{background:rgba(192,80,64,.1);color:var(--red);border:1px solid rgba(192,80,64,.3)}
+.dlv{width:7px;height:7px;border-radius:50%;background:currentColor;animation:blink 1.4s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);
+  background:var(--sur2);border:1px solid var(--brd);border-radius:12px;padding:12px 20px;
+  font-size:.85rem;font-weight:500;color:var(--txt);z-index:9999;
+  transition:transform .3s cubic-bezier(.34,1.56,.64,1);white-space:nowrap;max-width:calc(100vw - 32px);text-align:center}
+.toast.show{transform:translateX(-50%) translateY(0)}
+.tok{border-color:rgba(90,154,106,.4);color:var(--grn)}.terr{border-color:rgba(192,80,64,.4);color:var(--red)}
+.fi{animation:fi .35s ease}
+@keyframes fi{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.bgbtn{width:100%;padding:22px;border:none;border-radius:var(--r);background:var(--grn);color:#fff;
+  font-family:'Outfit',sans-serif;font-size:1.1rem;font-weight:700;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;gap:10px;touch-action:manipulation}
+.bgbtn:active{background:#3a8a5a;transform:scale(.97)}
+.transbtn{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;background:var(--adim);
+  border:1px solid var(--amid);border-radius:20px;font-size:.74rem;font-weight:500;
+  color:var(--accent);cursor:pointer;touch-action:manipulation;margin-top:8px}
+</style>
+</head>
+<body>
+<div id="app">
+<!-- HOME -->
+<div class="scr active" id="s-home">
+<div class="body" style="padding-top:28px">
+  <div style="text-align:center;margin-bottom:22px">
+    <div class="logo">Deutsch<em>Spiel</em></div>
+    <div class="logo-s">Sprachlernspiel · Мовна гра</div>
+  </div>
+  <div class="card">
+    <div class="ct">Spieler</div>
+    <div style="margin-bottom:12px"><label class="fl">Dein Name</label>
+      <input type="text" id="h-name" placeholder="z.B. Andrii" maxlength="20" autocomplete="off"></div>
+    <button class="btn bp" onclick="doCreate()">🎮&nbsp; Neues Spiel erstellen</button>
+    <div class="div">oder</div>
+    <div style="margin-bottom:12px"><label class="fl">Raum-Code</label>
+      <input type="text" id="h-code" placeholder="z.B. WOLF42" maxlength="8"
+        style="text-transform:uppercase;letter-spacing:.18em;font-size:1.1rem;text-align:center"
+        oninput="this.value=this.value.toUpperCase()"></div>
+    <button class="btn bd" onclick="doJoin()">🚪&nbsp; Beitreten</button>
+  </div>
+  <div class="card">
+    <div class="ct">Statistik</div>
+    <div class="sgrid">
+      <div class="sbox"><div class="snum" id="st-g">0</div><div class="slbl">Spiele</div></div>
+      <div class="sbox"><div class="snum" id="st-w">0</div><div class="slbl">Wörter DB</div></div>
+      <div class="sbox"><div class="snum" id="st-q">0</div><div class="slbl">Fragen</div></div>
+      <div class="sbox"><div class="snum" id="st-r">—</div><div class="slbl">Ø Bewertung</div></div>
+    </div>
+  </div>
+  <button class="btn bgh" onclick="gS('s-settings');lsUI()">⚙️&nbsp; Einstellungen</button>
+</div>
+</div>
+
+<!-- SETTINGS -->
+<div class="scr" id="s-settings">
+<div class="topbar">
+  <button class="btn bgh btn-sm" style="width:auto" onclick="gB()">← Zurück</button>
+  <span class="tb">Einstellungen</span>
+  <button class="btn bp btn-sm" style="width:auto" onclick="saveCfg()">✓</button>
+</div>
+<div class="body">
+  <div class="card">
+    <div class="ct">Schwierigkeitsgrad der Wörter</div>
+    <div class="seg" id="sg-d">
+      <div class="sopt on" data-v="1" onclick="so(this,'sg-d','dd')">A1–A2<br><small>Einfach</small></div>
+      <div class="sopt" data-v="2" onclick="so(this,'sg-d','dd')">B1–B2<br><small>Mittel</small></div>
+      <div class="sopt" data-v="3" onclick="so(this,'sg-d','dd')">C1–C2<br><small>Schwer</small></div>
+    </div>
+    <div class="sdesc" id="dd"></div>
+  </div>
+  <div class="card">
+    <div class="ct">Abstraktionsgrad (Wortspiel)</div>
+    <div class="seg" id="sg-a">
+      <div class="sopt on" data-v="1" onclick="so(this,'sg-a','da')">Konkret<br><small>Greifbar</small></div>
+      <div class="sopt" data-v="2" onclick="so(this,'sg-a','da')">Gemischt<br><small>Mix</small></div>
+      <div class="sopt" data-v="3" onclick="so(this,'sg-a','da')">Abstrakt<br><small>Konzepte</small></div>
+    </div>
+    <div class="sdesc" id="da"></div>
+  </div>
+  <div class="card">
+    <div class="ct">Wort-Datenbank</div>
+    <div class="srow2">
+      <div><div class="sn">Verlauf speichern</div><div class="sd">Benutzte Wörter werden nicht wiederholt</div></div>
+      <div class="tog on" id="t-h" onclick="this.classList.toggle('on')"></div>
+    </div>
+    <div class="srow2">
+      <div><div class="sn">Max. Einträge</div><div class="sd">Ältestes Wort wird entfernt</div></div>
+      <div class="nrow" style="width:116px">
+        <button class="nbtn" onclick="adj('nv-m',-10,10,500)">−</button>
+        <div class="nval" id="nv-m">200</div>
+        <button class="nbtn" onclick="adj('nv-m',10,10,500)">+</button>
+      </div>
+    </div>
+    <div class="srow2">
+      <div><div class="sn">Gespeichert</div><div class="sd" id="dbi">0 Wörter</div></div>
+      <button class="btn bgh btn-sm" onclick="clrDB()">Löschen</button>
+    </div>
+    <div id="dbp" style="margin-top:8px;line-height:1.9"></div>
+  </div>
+  <div class="card">
+    <div class="ct">Spielregeln (Wortspiel)</div>
+    <div class="srow2">
+      <div><div class="sn">Timer (Sekunden)</div></div>
+      <div class="nrow" style="width:116px">
+        <button class="nbtn" onclick="adj('nv-t',-15,15,180)">−</button>
+        <div class="nval" id="nv-t">60</div>
+        <button class="nbtn" onclick="adj('nv-t',15,15,180)">+</button>
+      </div>
+    </div>
+    <div class="srow2">
+      <div><div class="sn">Runden pro Spiel</div></div>
+      <div class="nrow" style="width:116px">
+        <button class="nbtn" onclick="adj('nv-r',-1,1,30)">−</button>
+        <div class="nval" id="nv-r">10</div>
+        <button class="nbtn" onclick="adj('nv-r',1,1,30)">+</button>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="ct">Gesprächsrunde</div>
+    <div class="srow2">
+      <div><div class="sn">Antwortzeit (0 = unbegrenzt)</div></div>
+      <div class="nrow" style="width:116px">
+        <button class="nbtn" onclick="adj('nv-at',-30,0,300)">−</button>
+        <div class="nval" id="nv-at">0</div>
+        <button class="nbtn" onclick="adj('nv-at',30,0,300)">+</button>
+      </div>
+    </div>
+    <div class="srow2">
+      <div><div class="sn">Bewertungszeit (Sek)</div></div>
+      <div class="nrow" style="width:116px">
+        <button class="nbtn" onclick="adj('nv-vt',-5,10,60)">−</button>
+        <div class="nval" id="nv-vt">30</div>
+        <button class="nbtn" onclick="adj('nv-vt',5,10,60)">+</button>
+      </div>
+    </div>
+    <div class="srow2">
+      <div><div class="sn">🔊 Frage automatisch vorlesen</div><div class="sd">TTS — Deutsch (Web Speech API)</div></div>
+      <div class="tog" id="t-tts" onclick="this.classList.toggle('on')"></div>
+    </div>
+    <div class="srow2">
+      <div><div class="sn">Gesprächsthemen gespeichert</div><div class="sd" id="thi">0 Themen</div></div>
+      <button class="btn bgh btn-sm" onclick="clrTopics()">Löschen</button>
+    </div>
+  </div>
+  <div class="card">
+    <div class="ct">KI-Wortgenerierung (gemeinsam für beide Modi)</div>
+    <div class="llm-grid" id="llm-prov">
+      <div class="llm-opt on" data-p="none" onclick="selP(this)">
+        <div class="llm-ico">🎲</div><div class="llm-nm">Offline</div><div class="llm-ds">Eingebaute Wörter</div>
+      </div>
+      <div class="llm-opt" data-p="anthropic" onclick="selP(this)">
+        <div class="llm-ico">⚗️</div><div class="llm-nm">Anthropic</div><div class="llm-ds">Claude</div>
+      </div>
+      <div class="llm-opt" data-p="openai" onclick="selP(this)">
+        <div class="llm-ico">🤖</div><div class="llm-nm">OpenAI</div><div class="llm-ds">GPT</div>
+      </div>
+      <div class="llm-opt" data-p="gemini" onclick="selP(this)">
+        <div class="llm-ico">✨</div><div class="llm-nm">Google</div><div class="llm-ds">Gemini</div>
+      </div>
+    </div>
+    <div id="pf-anthropic" class="prov-f" style="display:none">
+      <label class="fl">API-Key</label>
+      <input type="password" id="ak" placeholder="sk-ant-..." style="font-size:.82rem;margin-bottom:8px">
+      <label class="fl">Modell</label>
+      <div class="msel" id="ms-a">
+        <div class="mopt on" data-m="claude-sonnet-4-20250514">Sonnet 4<br><span>Empfohlen</span></div>
+        <div class="mopt" data-m="claude-opus-4-5">Opus 4.5<br><span>Stark</span></div>
+        <div class="mopt" data-m="claude-haiku-4-5-20251001">Haiku 4.5<br><span>Schnell</span></div>
+      </div>
+      <label class="fl" style="margin-top:8px">Eigenes Modell (überschreibt Auswahl)</label>
+      <input type="text" id="ak-model" placeholder="z.B. claude-opus-4-6" style="font-size:.82rem">
+    </div>
+    <div id="pf-openai" class="prov-f" style="display:none">
+      <label class="fl">API-Key</label>
+      <input type="password" id="ok" placeholder="sk-..." style="font-size:.82rem;margin-bottom:8px">
+      <label class="fl">Modell</label>
+      <div class="msel" id="ms-o">
+        <div class="mopt on" data-m="gpt-4o">gpt-4o<br><span>Empfohlen</span></div>
+        <div class="mopt" data-m="gpt-4o-mini">4o-mini<br><span>Schnell</span></div>
+        <div class="mopt" data-m="gpt-4-turbo">4-turbo<br><span>Stark</span></div>
+      </div>
+      <label class="fl" style="margin-top:8px">Eigenes Modell (überschreibt Auswahl)</label>
+      <input type="text" id="ok-model" placeholder="z.B. gpt-4.5-preview oder o3" style="font-size:.82rem">
+      <div style="font-size:.68rem;color:var(--tdim);margin-top:4px">
+        Aktuelle OpenAI Modelle: gpt-4o, gpt-4.5-preview, o3, o4-mini
+      </div>
+    </div>
+    <div id="pf-gemini" class="prov-f" style="display:none">
+      <label class="fl">API-Key</label>
+      <input type="password" id="gk" placeholder="AIza..." style="font-size:.82rem;margin-bottom:8px">
+      <label class="fl">Modell</label>
+      <div class="msel" id="ms-g">
+        <div class="mopt on" data-m="gemini-2.0-flash">2.0 Flash<br><span>Empfohlen</span></div>
+        <div class="mopt" data-m="gemini-1.5-pro">1.5 Pro<br><span>Stark</span></div>
+        <div class="mopt" data-m="gemini-1.5-flash">1.5 Flash<br><span>Schnell</span></div>
+      </div>
+      <label class="fl" style="margin-top:8px">Eigenes Modell (überschreibt Auswahl)</label>
+      <input type="text" id="gk-model" placeholder="z.B. gemini-2.5-pro-preview" style="font-size:.82rem">
+    </div>
+  </div>
+  <button class="btn bp" onclick="saveCfg()">✓ Einstellungen speichern</button>
+</div>
+</div>
+
+<!-- LOBBY -->
+<div class="scr" id="s-lobby">
+<div class="topbar">
+  <button class="btn bgh btn-sm" style="width:auto" onclick="leaveRoom()">← Verlassen</button>
+  <span class="tb">Lobby</span>
+  <button class="btn bgh btn-sm" style="width:auto" onclick="gS('s-settings');lsUI()">⚙️</button>
+</div>
+<div class="body">
+  <div class="card">
+    <div class="ct">Raum-Code — tippen zum Kopieren</div>
+    <div class="rcode" id="lob-c" onclick="cpyCode()">—</div>
+    <div style="text-align:center;margin-top:10px;font-size:.78rem;color:var(--tdim);background:var(--adim);border:1px solid var(--amid);border-radius:var(--rs);padding:10px">
+      📱 Andere öffnen diese Seite im Browser und geben den Code ein
+    </div>
+  </div>
+  <div class="card">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+      <div class="ct" style="margin-bottom:0">Spieler (<span id="lob-n">1</span>)</div>
+      <div class="cbdg cwt" id="lob-conn"><div class="dlv"></div>&nbsp;Warte…</div>
+    </div>
+    <div id="lob-pl"></div>
+  </div>
+
+  <!-- MODE SELECTION — only host sees this -->
+  <div class="card" id="lob-mode-card">
+    <div class="ct">Spielmodus wählen</div>
+    <div class="mode-cards">
+      <div class="mode-card" id="mc-w" onclick="selMode('wort')">
+        <div class="mode-ico">🎮</div>
+        <div class="mode-nm">Wortspiel</div>
+        <div class="mode-ds">Wort beschreiben — andere raten</div>
+      </div>
+      <div class="mode-card" id="mc-g" onclick="selMode('gesprach')">
+        <div class="mode-ico">🎙️</div>
+        <div class="mode-nm">Gesprächsrunde</div>
+        <div class="mode-ds">KI-Themen · Fragen · Bewertung</div>
+      </div>
+    </div>
+    <div id="lob-mode-warn" style="text-align:center;font-size:.74rem;color:var(--red);display:none;margin-top:4px">
+      ⚠️ Gesprächsrunde benötigt LLM-Konfiguration
+    </div>
+  </div>
+
+  <button class="btn bp" id="btn-st" onclick="startGame()" disabled>🚀&nbsp; Spiel starten</button>
+  <div style="text-align:center;margin-top:8px;font-size:.72rem;color:var(--tdim)">Mindestens 2 Spieler · Modus wählen</div>
+</div>
+</div>
+
+<!-- WAITING GUEST -->
+<div class="scr" id="s-wait">
+<div class="topbar">
+  <button class="btn bgh btn-sm" style="width:auto" onclick="leaveRoom()">← Verlassen</button>
+  <span class="tb">Warte…</span>
+  <div class="cbdg cwt" id="wt-s"><div class="dlv"></div>&nbsp;Verbinde…</div>
+</div>
+<div class="body">
+  <div style="text-align:center;padding:40px 0 20px">
+    <div class="dots"><span>•</span><span>•</span><span>•</span></div>
+    <div style="margin-top:14px;font-size:.85rem;color:var(--tdim)">Host startet das Spiel…</div>
+    <div style="margin-top:5px;font-size:.72rem;color:var(--tdim)">Raum: <b style="color:var(--accent)" id="wt-c">—</b></div>
+  </div>
+  <div class="card"><div class="ct">Mitspieler</div><div id="wt-pl"></div></div>
+</div>
+</div>
+<!-- WORTSPIEL: DESCRIBER -->
+<div class="scr" id="s-desc">
+<div class="topbar">
+  <div style="font-size:.78rem;color:var(--tdim)">Runde <span id="d-rn">1</span>/<span id="d-rs">10</span></div>
+  <span class="tb">Du bist dran!</span>
+  <div class="tring" id="d-tm">—</div>
+</div>
+<div class="body">
+  <div style="text-align:center;margin-bottom:8px"><span class="tag ta">✍️ Beschreibe dieses Wort</span></div>
+  <div class="wcard">
+    <div id="d-ld" style="padding:18px;text-align:center"><div class="spin"></div>
+      <div style="margin-top:9px;font-size:.78rem;color:var(--tdim)">Wort wird generiert…</div></div>
+    <div id="d-ws" style="display:none">
+      <span class="wart" id="d-at"></span>
+      <div class="wde" id="d-de"></div>
+      <div class="wuk" id="d-uk"></div>
+      <div class="wbdg" id="d-bd"></div>
+    </div>
+  </div>
+  <div class="card"><div class="ct">Wer hat erraten?</div><div id="d-gs"></div></div>
+  <div class="btn-row" style="margin-top:4px">
+    <button class="btn br" onclick="noOne()">✗&nbsp; Niemand</button>
+    <button class="btn bg" id="btn-dn" onclick="endRound()" disabled>✓&nbsp; Weiter</button>
+  </div>
+</div>
+</div>
+
+<!-- WORTSPIEL: GUESSER -->
+<div class="scr" id="s-guess">
+<div class="topbar">
+  <div style="font-size:.78rem;color:var(--tdim)">Runde <span id="g-rn">1</span>/<span id="g-rs">10</span></div>
+  <span class="tb">Rate das Wort!</span>
+  <div class="tring" id="g-tm">—</div>
+</div>
+<div class="body">
+  <div class="card" style="text-align:center;padding:20px">
+    <div style="font-size:.68rem;color:var(--tdim);letter-spacing:.12em;text-transform:uppercase;margin-bottom:5px">Beschreibt gerade</div>
+    <div style="font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:700;color:var(--accent)" id="g-dn">—</div>
+  </div>
+  <div id="g-wt" style="text-align:center;padding:24px 0">
+    <div class="dots"><span>•</span><span>•</span><span>•</span></div>
+    <div style="margin-top:10px;font-size:.82rem;color:var(--tdim)">Höre zu und rate…</div>
+  </div>
+  <div id="g-bt" style="display:none;margin-bottom:12px">
+    <button class="bgbtn" onclick="iGuessed()">🎉&nbsp; Ich hab's erraten!</button>
+  </div>
+  <div id="g-ok" style="display:none;text-align:center;padding:16px">
+    <div style="font-size:2rem">✅</div>
+    <div style="font-size:.88rem;color:var(--grn);margin-top:6px;font-weight:600">Super! +2 Punkte</div>
+  </div>
+  <div class="card"><div class="ct">Stand</div><div id="g-bd"></div></div>
+</div>
+</div>
+
+<!-- WORTSPIEL: RESULT -->
+<div class="scr" id="s-wres">
+<div class="topbar"><div></div><span class="tb">Ergebnis</span><div></div></div>
+<div class="body">
+  <div class="card fi" style="text-align:center;padding:24px">
+    <div style="font-size:2.2rem" id="wr-ic">🎊</div>
+    <div style="font-family:'Playfair Display',serif;font-size:1.7rem;font-weight:900;color:var(--accent);margin-top:6px" id="wr-wd"></div>
+    <div style="font-size:.84rem;color:var(--tmid);margin-top:4px" id="wr-uk"></div>
+  </div>
+  <div class="card fi"><div class="ct">Punkte diese Runde</div><div id="wr-sc"></div></div>
+  <div class="card fi"><div class="ct">Gesamtstand</div><div id="wr-tt"></div></div>
+  <div id="wr-btn"><button class="btn bp" onclick="nextRound()">▶&nbsp; Nächste Runde</button></div>
+  <div id="wr-wt" style="display:none;text-align:center;padding:14px;font-size:.82rem;color:var(--tdim)">
+    <div class="dots"><span>•</span><span>•</span><span>•</span></div>Warte auf Host…
+  </div>
+</div>
+</div>
+
+<!-- GESPRÄCHSRUNDE: TOPIC SELECTION -->
+<div class="scr" id="s-topics">
+<div class="topbar">
+  <div></div><span class="tb" style="color:var(--blu)">Thema wählen</span><div></div>
+</div>
+<div class="body">
+  <div id="ts-load" style="text-align:center;padding:28px 0">
+    <div class="spin" style="border-top-color:var(--blu)"></div>
+    <div style="margin-top:10px;font-size:.8rem;color:var(--tdim)">KI generiert Themen…</div>
+  </div>
+  <div id="ts-list" style="margin-bottom:10px"></div>
+
+  <!-- Custom topic input -->
+  <div class="card" style="border-style:dashed;border-color:var(--bmid)">
+    <div class="ct" style="color:var(--blu)">Eigenes Thema eingeben</div>
+    <div style="font-size:.76rem;color:var(--tdim);margin-bottom:10px">
+      Sprache egal — auf Deutsch, Ukrainisch oder Russisch
+    </div>
+    <input type="text" id="ts-custom" placeholder="z.B. Sollte KI im Unterricht eingesetzt werden?"
+      style="font-size:.88rem" oninput="onCustomTopicInput(this.value)">
+    <div style="text-align:right;margin-top:8px">
+      <button class="btn bp btn-sm" id="btn-custom-sel" onclick="selectCustomTopic()"
+        disabled style="--accent:var(--blu);width:auto">✓ Dieses Thema nehmen</button>
+    </div>
+  </div>
+
+  <div style="display:grid;gap:8px;margin-top:8px">
+    <button class="btn bp" id="btn-topic" onclick="confirmTopic()" disabled style="--accent:var(--blu)">
+      🚀&nbsp; Thema starten
+    </button>
+    <button class="btn bgh" onclick="regenTopics()" id="btn-regen" style="display:none;border-color:var(--bmid);color:var(--blu)">
+      🔄&nbsp; 4 neue Vorschläge
+    </button>
+  </div>
+</div>
+</div>
+
+<!-- GESPRÄCHSRUNDE: TOPIC WAIT (GUESTS) -->
+<div class="scr" id="s-twait">
+<div class="topbar"><div></div><span class="tb" style="color:var(--blu)">Host wählt Thema</span><div></div></div>
+<div class="body">
+  <div style="text-align:center;padding:48px 0 24px">
+    <div class="dots"><span>•</span><span>•</span><span>•</span></div>
+    <div style="margin-top:14px;font-size:.85rem;color:var(--tdim)">Warte auf Themenauswahl…</div>
+  </div>
+  <div class="card"><div class="ct">Mitspieler</div><div id="tw-pl"></div></div>
+</div>
+</div>
+
+<!-- GESPRÄCHSRUNDE: QUESTION -->
+<div class="scr" id="s-question">
+<div class="topbar">
+  <div style="font-size:.78rem;color:var(--tdim)">Frage <span id="q-num">1</span></div>
+  <span class="tb" style="color:var(--blu)">Gesprächsrunde</span>
+  <div class="tring" id="q-tm" style="border-color:var(--bmid);color:var(--blu)"></div>
+</div>
+<div class="body">
+  <div class="pgbar"><div class="pgfill" id="q-pg" style="width:0%;background:var(--blu)"></div></div>
+  <div style="text-align:center;margin-bottom:10px">
+    <div style="font-size:.62rem;color:var(--tdim);letter-spacing:.12em;text-transform:uppercase;margin-bottom:3px">Thema</div>
+    <div style="font-size:.92rem;font-weight:600;color:var(--blu)" id="q-topic"></div>
+  </div>
+  <div class="abadge" style="--adim:var(--bdim);--amid:var(--bmid);--accent:var(--blu)">
+    <div class="albl">Antwortet</div>
+    <div class="aname" style="color:var(--blu)" id="q-ans">—</div>
+  </div>
+  <div class="qcard">
+    <div id="q-ld" style="padding:16px;text-align:center"><div class="spin" style="border-top-color:var(--blu)"></div>
+      <div style="margin-top:8px;font-size:.78rem;color:var(--tdim)">Frage wird generiert…</div></div>
+    <div id="q-cnt" style="display:none">
+      <div style="font-size:.62rem;color:var(--blu);letter-spacing:.15em;text-transform:uppercase;margin-bottom:8px" id="q-n2"></div>
+      <div class="qde" id="q-de"></div>
+      <div class="quk" id="q-uk"></div>
+      <div style="text-align:center">
+        <div class="transbtn" id="btn-qtrans" onclick="toggleQTrans()">🇺🇦 Übersetzung anzeigen</div>
+      </div>
+    </div>
+  </div>
+  <div id="q-actrl" style="display:none">
+    <button class="btn bg" style="padding:18px;font-size:1rem" onclick="doneAnswering()">
+      ✅&nbsp; Fertig — ich habe geantwortet
+    </button>
+  </div>
+  <div id="q-owait" style="display:none;text-align:center;padding:14px;font-size:.8rem;color:var(--tdim)">
+    Zuhören und die Antwort vorbereiten…
+  </div>
+</div>
+</div>
+
+<!-- GESPRÄCHSRUNDE: AFTER ANSWER (no voting) -->
+<div class="scr" id="s-vote">
+<div class="topbar">
+  <div></div><span class="tb" style="color:var(--blu)">Nach der Antwort</span><div></div>
+</div>
+<div class="body">
+  <div class="card" style="text-align:center;padding:20px">
+    <div style="font-size:.65rem;color:var(--tdim);letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px">Hat geantwortet</div>
+    <div style="font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:700;color:var(--blu)" id="v-nm">—</div>
+    <div style="font-size:.82rem;color:var(--tmid);margin-top:6px;font-style:italic;line-height:1.4" id="v-q">—</div>
+  </div>
+
+  <!-- Answerer sees KI button -->
+  <div id="v-answerer-ctrl" style="display:none">
+    <div style="text-align:center;padding:12px 0;font-size:.8rem;color:var(--tdim)">
+      Diskutiert das Thema mit der Gruppe!
+    </div>
+    <button class="btn bgh" onclick="requestAndBroadcastAI()"
+      style="border-color:var(--bmid);color:var(--blu)">
+      🧠&nbsp; KI-Expertenmeinung abrufen
+    </button>
+    <div style="text-align:center;margin-top:5px;font-size:.68rem;color:var(--tdim)">
+      Alle sehen dann die KI-Meinung gleichzeitig
+    </div>
+  </div>
+
+  <!-- Others wait -->
+  <div id="v-others-wait" style="display:none;text-align:center;padding:20px 0">
+    <div class="dots"><span>•</span><span>•</span><span>•</span></div>
+    <div style="margin-top:12px;font-size:.84rem;color:var(--tdim)">Diskussion läuft…</div>
+  </div>
+
+  <!-- AI opinion card (appears for everyone when loaded) -->
+  <div class="ai-card fi" id="v-ai-card" style="display:none;margin-top:12px">
+    <div class="ai-header">
+      <div class="ai-title">🧠 KI-Expertenmeinung</div>
+      <div class="ai-mode-btns">
+        <div class="ai-mode-btn on" id="v-ai-kurz" onclick="setAiMode('kurz')">Kurz</div>
+        <div class="ai-mode-btn" id="v-ai-lang" onclick="setAiMode('lang')">Ausführlich</div>
+      </div>
+    </div>
+    <div id="v-ai-loading" class="ai-loading" style="display:none">
+      <div class="spin" style="border-top-color:var(--blu)"></div>
+      <div style="margin-top:8px;font-size:.76rem;color:var(--tdim)">KI denkt nach…</div>
+    </div>
+    <div id="v-ai-content" style="display:none">
+      <div class="ai-text" id="v-ai-de"></div>
+      <div class="ai-text-uk" id="v-ai-uk"></div>
+      <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+        <div class="tts-btn" id="v-tts-ai-btn" onclick="ttsVAI()">🔊 Vorlesen</div>
+        <div class="transbtn" id="v-ai-trans-btn" onclick="toggleVAiTrans()">🇺🇦 Übersetzung</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Host navigation controls -->
+  <div id="v-host-ctrl" style="display:none;margin-top:12px">
+    <div class="btn-row">
+      <button class="btn bd" onclick="endTopic()">🏁&nbsp; Thema beenden</button>
+      <button class="btn bp" onclick="nextQuestion()" style="--accent:var(--blu)">▶&nbsp; Nächste Frage</button>
+    </div>
+  </div>
+  <div id="v-guest-wait" style="display:none;text-align:center;padding:12px;font-size:.8rem;color:var(--tdim)">
+    <div style="margin-top:4px">Warte auf Host…</div>
+  </div>
+</div>
+</div>
+
+<!-- GESPRÄCHSRUNDE: VOTE RESULT -->
+<div class="scr" id="s-vres">
+<div class="topbar"><div></div><span class="tb" style="color:var(--blu)">Bewertungsergebnis</span><div></div></div>
+<div class="body">
+  <div class="score-reveal fi" style="--adim:var(--bdim);--amid:var(--bmid);--accent:var(--blu)">
+    <div style="font-size:.65rem;color:var(--tdim);letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px">Durchschnittliche Bewertung</div>
+    <div class="score-num" style="color:var(--blu)" id="vr-avg">—</div>
+    <div style="font-size:1.4rem;margin-top:5px;letter-spacing:3px" id="vr-stars"></div>
+    <div style="font-size:.74rem;color:var(--tdim);margin-top:6px" id="vr-cnt"></div>
+  </div>
+  <div class="card fi" style="margin-top:12px">
+    <div class="ct" style="color:var(--blu)">Sitzungs-Rangliste</div>
+    <div id="vr-bd"></div>
+  </div>
+  <!-- AI EXPERT OPINION -->
+  <div class="ai-card fi" id="ai-card" style="display:none">
+    <div class="ai-header">
+      <div class="ai-title">🧠 KI-Experte Meinung</div>
+      <div class="ai-mode-btns">
+        <div class="ai-mode-btn on" id="ai-kurz" onclick="setAiMode('kurz')">Kurz</div>
+        <div class="ai-mode-btn" id="ai-lang" onclick="setAiMode('lang')">Ausführlich</div>
+      </div>
+    </div>
+    <div id="ai-loading" class="ai-loading" style="display:none">
+      <div class="spin" style="border-top-color:var(--blu)"></div>
+      <div style="margin-top:8px;font-size:.76rem;color:var(--tdim)">KI denkt nach…</div>
+    </div>
+    <div id="ai-content" style="display:none">
+      <div class="ai-text" id="ai-de"></div>
+      <div class="ai-text-uk" id="ai-uk"></div>
+      <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+        <div class="tts-btn" id="tts-ai-btn" onclick="ttsAI()">🔊 Vorlesen</div>
+        <div class="transbtn" onclick="toggleAiTrans()">🇺🇦 Übersetzung</div>
+      </div>
+    </div>
+    <div id="ai-none" style="font-size:.78rem;color:var(--tdim);text-align:center;padding:8px">
+      Kein LLM konfiguriert
+    </div>
+  </div>
+
+  <!-- AI button — only shown to the one who answered -->
+  <div id="ai-req-answerer" style="margin-top:10px;display:none">
+    <button class="btn bgh" id="btn-ai-op" onclick="requestAndBroadcastAI()"
+      style="border-color:var(--bmid);color:var(--blu);font-size:.9rem">
+      🧠&nbsp; KI-Expertenmeinung abrufen
+    </button>
+    <div style="text-align:center;margin-top:5px;font-size:.7rem;color:var(--tdim)">
+      Nur du kannst das abrufen — alle sehen dann das Ergebnis
+    </div>
+  </div>
+  <!-- Others see this while waiting -->
+  <div id="ai-req-waiting" style="margin-top:10px;display:none;text-align:center;
+    padding:10px;font-size:.78rem;color:var(--tdim);background:var(--bdim);
+    border-radius:var(--rs);border:1px solid var(--bmid)">
+    ⏳ Warte auf KI-Meinung…
+  </div>
+
+  <div id="vr-hctrl" style="display:none;margin-top:8px">
+    <div class="btn-row">
+      <button class="btn bd" onclick="endTopic()">🏁&nbsp; Thema beenden</button>
+      <button class="btn bp" onclick="nextQuestion()" style="--accent:var(--blu)">▶&nbsp; Nächste Frage</button>
+    </div>
+  </div>
+  <div id="vr-gwt" style="display:none;text-align:center;padding:14px;font-size:.82rem;color:var(--tdim)">
+    <div class="dots"><span>•</span><span>•</span><span>•</span></div>Host entscheidet…
+  </div>
+</div>
+</div>
+
+<!-- GAME OVER -->
+<div class="scr" id="s-over">
+<div class="body" style="padding-top:36px">
+  <div style="text-align:center;margin-bottom:22px">
+    <div style="font-size:3rem" id="ov-ico">🏆</div>
+    <div class="logo" style="font-size:1.8rem;margin-top:8px">Spiel beendet!</div>
+  </div>
+  <div class="card"><div class="ct">Endstand</div><div id="ov-bd"></div></div>
+  <div class="card"><div class="ct" id="ov-hist-title">Heutige Wörter</div><div id="ov-hist" style="line-height:2"></div></div>
+  <div style="display:grid;gap:10px;margin-top:8px">
+    <button class="btn bp" onclick="playAgain()">🔄&nbsp; Nochmal spielen</button>
+    <button class="btn bgh" onclick="goHome()">🏠&nbsp; Hauptmenü</button>
+  </div>
+</div>
+</div>
+
+</div><!-- #app -->
+<div class="toast" id="toast"></div>
+<script>
+// ── WORDS DB ──
+const WORDS={"1_1": [{"de": "der Hund", "uk": "собака", "article": "der"}, {"de": "die Katze", "uk": "кішка", "article": "die"}, {"de": "der Vogel", "uk": "птах", "article": "der"}, {"de": "das Pferd", "uk": "кінь", "article": "das"}, {"de": "die Kuh", "uk": "корова", "article": "die"}, {"de": "das Schwein", "uk": "свиня", "article": "das"}, {"de": "der Fisch", "uk": "риба", "article": "der"}, {"de": "der Hase", "uk": "заєць", "article": "der"}, {"de": "die Maus", "uk": "миша", "article": "die"}, {"de": "der Bär", "uk": "ведмідь", "article": "der"}, {"de": "der Elefant", "uk": "слон", "article": "der"}, {"de": "der Löwe", "uk": "лев", "article": "der"}, {"de": "die Schlange", "uk": "змія", "article": "die"}, {"de": "der Schmetterling", "uk": "метелик", "article": "der"}, {"de": "der Apfel", "uk": "яблуко", "article": "der"}, {"de": "das Brot", "uk": "хліб", "article": "das"}, {"de": "die Milch", "uk": "молоко", "article": "die"}, {"de": "das Ei", "uk": "яйце", "article": "das"}, {"de": "der Käse", "uk": "сир", "article": "der"}, {"de": "die Kartoffel", "uk": "картопля", "article": "die"}, {"de": "die Tomate", "uk": "помідор", "article": "die"}, {"de": "die Karotte", "uk": "морква", "article": "die"}, {"de": "der Kuchen", "uk": "торт/пиріг", "article": "der"}, {"de": "das Fleisch", "uk": "м'ясо", "article": "das"}, {"de": "die Suppe", "uk": "суп", "article": "die"}, {"de": "der Salat", "uk": "салат", "article": "der"}, {"de": "die Banane", "uk": "банан", "article": "die"}, {"de": "die Orange", "uk": "апельсин", "article": "die"}, {"de": "der Reis", "uk": "рис", "article": "der"}, {"de": "das Haus", "uk": "будинок", "article": "das"}, {"de": "die Tür", "uk": "двері", "article": "die"}, {"de": "das Fenster", "uk": "вікно", "article": "das"}, {"de": "das Bett", "uk": "ліжко", "article": "das"}, {"de": "der Tisch", "uk": "стіл", "article": "der"}, {"de": "der Stuhl", "uk": "стілець", "article": "der"}, {"de": "die Lampe", "uk": "лампа", "article": "die"}, {"de": "das Buch", "uk": "книга", "article": "das"}, {"de": "die Küche", "uk": "кухня", "article": "die"}, {"de": "das Bad", "uk": "ванна кімната", "article": "das"}, {"de": "der Schlüssel", "uk": "ключ", "article": "der"}, {"de": "die Treppe", "uk": "сходи", "article": "die"}, {"de": "das Auto", "uk": "машина", "article": "das"}, {"de": "der Zug", "uk": "поїзд", "article": "der"}, {"de": "das Fahrrad", "uk": "велосипед", "article": "das"}, {"de": "der Bus", "uk": "автобус", "article": "der"}, {"de": "das Flugzeug", "uk": "літак", "article": "das"}, {"de": "das Schiff", "uk": "корабель", "article": "das"}, {"de": "das Motorrad", "uk": "мотоцикл", "article": "das"}, {"de": "der Bahnhof", "uk": "вокзал", "article": "der"}, {"de": "das Hemd", "uk": "сорочка", "article": "das"}, {"de": "die Hose", "uk": "штани", "article": "die"}, {"de": "der Schuh", "uk": "черевик", "article": "der"}, {"de": "die Jacke", "uk": "куртка", "article": "die"}, {"de": "der Hut", "uk": "капелюх", "article": "der"}, {"de": "die Mütze", "uk": "шапка", "article": "die"}, {"de": "der Mantel", "uk": "пальто", "article": "der"}, {"de": "das Kleid", "uk": "сукня", "article": "das"}, {"de": "die Sonne", "uk": "сонце", "article": "die"}, {"de": "der Mond", "uk": "місяць", "article": "der"}, {"de": "der Stern", "uk": "зірка", "article": "der"}, {"de": "der Baum", "uk": "дерево", "article": "der"}, {"de": "die Blume", "uk": "квітка", "article": "die"}, {"de": "der Fluss", "uk": "річка", "article": "der"}, {"de": "der Berg", "uk": "гора", "article": "der"}, {"de": "der See", "uk": "озеро", "article": "der"}, {"de": "der Wald", "uk": "ліс", "article": "der"}, {"de": "das Meer", "uk": "море", "article": "das"}, {"de": "die Gabel", "uk": "виделка", "article": "die"}, {"de": "das Messer", "uk": "ніж", "article": "das"}, {"de": "der Löffel", "uk": "ложка", "article": "der"}, {"de": "der Teller", "uk": "тарілка", "article": "der"}, {"de": "die Tasse", "uk": "чашка", "article": "die"}, {"de": "das Glas", "uk": "склянка", "article": "das"}, {"de": "die Uhr", "uk": "годинник", "article": "die"}, {"de": "der Ball", "uk": "м'яч", "article": "der"}, {"de": "das Spielzeug", "uk": "іграшка", "article": "das"}, {"de": "die Puppe", "uk": "лялька", "article": "die"}, {"de": "der Bleistift", "uk": "олівець", "article": "der"}, {"de": "die Schere", "uk": "ножиці", "article": "die"}, {"de": "das Papier", "uk": "папір", "article": "das"}, {"de": "die Tasche", "uk": "сумка", "article": "die"}, {"de": "der Rucksack", "uk": "рюкзак", "article": "der"}, {"de": "der Stift", "uk": "ручка", "article": "der"}, {"de": "das Handy", "uk": "телефон", "article": "das"}, {"de": "der Computer", "uk": "комп'ютер", "article": "der"}, {"de": "der Fernseher", "uk": "телевізор", "article": "der"}, {"de": "das Radio", "uk": "радіо", "article": "das"}, {"de": "die Gitarre", "uk": "гітара", "article": "die"}, {"de": "das Klavier", "uk": "піаніно", "article": "das"}, {"de": "der Fußball", "uk": "футбол", "article": "der"}, {"de": "das Schwimmbad", "uk": "басейн", "article": "das"}, {"de": "der Park", "uk": "парк", "article": "der"}, {"de": "der Garten", "uk": "сад", "article": "der"}, {"de": "die Straße", "uk": "вулиця", "article": "die"}, {"de": "das Dorf", "uk": "село", "article": "das"}, {"de": "die Stadt", "uk": "місто", "article": "die"}, {"de": "der Arzt", "uk": "лікар", "article": "der"}, {"de": "der Lehrer", "uk": "вчитель", "article": "der"}], "1_2": [{"de": "schlafen", "uk": "спати", "article": ""}, {"de": "laufen", "uk": "бігати", "article": ""}, {"de": "essen", "uk": "їсти", "article": ""}, {"de": "trinken", "uk": "пити", "article": ""}, {"de": "kochen", "uk": "готувати їжу", "article": ""}, {"de": "lachen", "uk": "сміятися", "article": ""}, {"de": "weinen", "uk": "плакати", "article": ""}, {"de": "spielen", "uk": "грати", "article": ""}, {"de": "lesen", "uk": "читати", "article": ""}, {"de": "schreiben", "uk": "писати", "article": ""}, {"de": "schwimmen", "uk": "плавати", "article": ""}, {"de": "tanzen", "uk": "танцювати", "article": ""}, {"de": "singen", "uk": "співати", "article": ""}, {"de": "sprechen", "uk": "говорити", "article": ""}, {"de": "groß", "uk": "великий", "article": ""}, {"de": "klein", "uk": "маленький", "article": ""}, {"de": "schnell", "uk": "швидкий", "article": ""}, {"de": "langsam", "uk": "повільний", "article": ""}, {"de": "heiß", "uk": "гарячий", "article": ""}, {"de": "kalt", "uk": "холодний", "article": ""}, {"de": "schön", "uk": "гарний", "article": ""}, {"de": "hässlich", "uk": "потворний", "article": ""}, {"de": "laut", "uk": "гучний", "article": ""}, {"de": "leise", "uk": "тихий", "article": ""}, {"de": "alt", "uk": "старий", "article": ""}, {"de": "neu", "uk": "новий", "article": ""}, {"de": "die Arbeit", "uk": "робота", "article": "die"}, {"de": "die Schule", "uk": "школа", "article": "die"}, {"de": "das Wetter", "uk": "погода", "article": "das"}, {"de": "die Zeit", "uk": "час", "article": "die"}, {"de": "kaufen", "uk": "купувати", "article": ""}, {"de": "verkaufen", "uk": "продавати", "article": ""}, {"de": "fragen", "uk": "питати", "article": ""}, {"de": "antworten", "uk": "відповідати", "article": ""}, {"de": "helfen", "uk": "допомагати", "article": ""}, {"de": "warten", "uk": "чекати", "article": ""}, {"de": "fahren", "uk": "їхати", "article": ""}, {"de": "fliegen", "uk": "летіти", "article": ""}, {"de": "öffnen", "uk": "відкривати", "article": ""}, {"de": "schließen", "uk": "закривати", "article": ""}, {"de": "jung", "uk": "молодий", "article": ""}, {"de": "warm", "uk": "теплий", "article": ""}, {"de": "sauber", "uk": "чистий", "article": ""}, {"de": "schmutzig", "uk": "брудний", "article": ""}, {"de": "müde", "uk": "втомлений", "article": ""}, {"de": "gesund", "uk": "здоровий", "article": ""}, {"de": "das Hobby", "uk": "хобі", "article": "das"}, {"de": "die Reise", "uk": "подорож", "article": "die"}, {"de": "der Urlaub", "uk": "відпустка", "article": "der"}, {"de": "die Familie", "uk": "сім'я", "article": "die"}], "1_3": [{"de": "die Freude", "uk": "радість", "article": "die"}, {"de": "die Trauer", "uk": "смуток", "article": "die"}, {"de": "die Angst", "uk": "страх", "article": "die"}, {"de": "die Liebe", "uk": "кохання", "article": "die"}, {"de": "der Mut", "uk": "сміливість", "article": "der"}, {"de": "die Hoffnung", "uk": "надія", "article": "die"}, {"de": "die Freiheit", "uk": "свобода", "article": "die"}, {"de": "das Glück", "uk": "щастя", "article": "das"}, {"de": "die Freundschaft", "uk": "дружба", "article": "die"}, {"de": "der Traum", "uk": "мрія/сон", "article": "der"}, {"de": "die Stille", "uk": "тиша", "article": "die"}, {"de": "die Ruhe", "uk": "спокій", "article": "die"}, {"de": "die Wahrheit", "uk": "правда", "article": "die"}, {"de": "die Lüge", "uk": "брехня", "article": "die"}, {"de": "der Frieden", "uk": "мир", "article": "der"}, {"de": "das Vertrauen", "uk": "довіра", "article": "das"}, {"de": "die Geduld", "uk": "терпіння", "article": "die"}, {"de": "die Neugier", "uk": "цікавість", "article": "die"}, {"de": "der Stolz", "uk": "гордість", "article": "der"}, {"de": "die Scham", "uk": "сором", "article": "die"}], "2_1": [{"de": "die Brücke", "uk": "міст", "article": "die"}, {"de": "der Turm", "uk": "вежа", "article": "der"}, {"de": "das Museum", "uk": "музей", "article": "das"}, {"de": "die Bibliothek", "uk": "бібліотека", "article": "die"}, {"de": "das Rathaus", "uk": "ратуша", "article": "das"}, {"de": "der Marktplatz", "uk": "ринкова площа", "article": "der"}, {"de": "die Ampel", "uk": "світлофор", "article": "die"}, {"de": "das Denkmal", "uk": "пам'ятник", "article": "das"}, {"de": "der Brunnen", "uk": "фонтан/криниця", "article": "der"}, {"de": "die Werkstatt", "uk": "майстерня", "article": "die"}, {"de": "der Bildschirm", "uk": "екран", "article": "der"}, {"de": "die Tastatur", "uk": "клавіатура", "article": "die"}, {"de": "der Drucker", "uk": "принтер", "article": "der"}, {"de": "das Mikrofon", "uk": "мікрофон", "article": "das"}, {"de": "die Kamera", "uk": "камера", "article": "die"}, {"de": "der Lautsprecher", "uk": "динамік", "article": "der"}, {"de": "das Ladekabel", "uk": "зарядний кабель", "article": "das"}, {"de": "der Akku", "uk": "акумулятор", "article": "der"}, {"de": "der Blitz", "uk": "блискавка", "article": "der"}, {"de": "der Donner", "uk": "грім", "article": "der"}, {"de": "der Sturm", "uk": "буря", "article": "der"}, {"de": "der Nebel", "uk": "туман", "article": "der"}, {"de": "der Regenbogen", "uk": "веселка", "article": "der"}, {"de": "die Welle", "uk": "хвиля", "article": "die"}, {"de": "der Vulkan", "uk": "вулкан", "article": "der"}, {"de": "die Wüste", "uk": "пустеля", "article": "die"}, {"de": "der Gletscher", "uk": "льодовик", "article": "der"}, {"de": "die Klippe", "uk": "скеля", "article": "die"}, {"de": "der Koffer", "uk": "валіза", "article": "der"}, {"de": "der Regenschirm", "uk": "парасолька", "article": "der"}, {"de": "die Taschenlampe", "uk": "ліхтарик", "article": "die"}, {"de": "das Werkzeug", "uk": "інструмент", "article": "das"}, {"de": "der Spiegel", "uk": "дзеркало", "article": "der"}, {"de": "die Waage", "uk": "ваги", "article": "die"}, {"de": "das Teleskop", "uk": "телескоп", "article": "das"}, {"de": "der Kompass", "uk": "компас", "article": "der"}, {"de": "die Schaufel", "uk": "лопата", "article": "die"}, {"de": "das Seil", "uk": "мотузка", "article": "das"}, {"de": "das Aquarium", "uk": "акваріум", "article": "das"}, {"de": "die Apotheke", "uk": "аптека", "article": "die"}, {"de": "das Krankenhaus", "uk": "лікарня", "article": "das"}, {"de": "der Flughafen", "uk": "аеропорт", "article": "der"}, {"de": "das Stadion", "uk": "стадіон", "article": "das"}, {"de": "die Fabrik", "uk": "завод", "article": "die"}, {"de": "der Hafen", "uk": "порт", "article": "der"}, {"de": "die Tankstelle", "uk": "заправка", "article": "die"}, {"de": "das Gewächshaus", "uk": "теплиця", "article": "das"}, {"de": "der Leuchtturm", "uk": "маяк", "article": "der"}, {"de": "die Windmühle", "uk": "вітряк", "article": "die"}, {"de": "das Gefängnis", "uk": "в'язниця", "article": "das"}, {"de": "der Staudamm", "uk": "гребля", "article": "der"}, {"de": "die Siedlung", "uk": "поселення", "article": "die"}, {"de": "das Gebirge", "uk": "гори", "article": "das"}, {"de": "die Höhle", "uk": "печера", "article": "die"}, {"de": "der Wasserfall", "uk": "водоспад", "article": "der"}, {"de": "die Insel", "uk": "острів", "article": "die"}, {"de": "der Kanal", "uk": "канал", "article": "der"}, {"de": "die Bucht", "uk": "бухта", "article": "die"}], "2_2": [{"de": "die Gesellschaft", "uk": "суспільство", "article": "die"}, {"de": "der Unterschied", "uk": "різниця", "article": "der"}, {"de": "die Erfahrung", "uk": "досвід", "article": "die"}, {"de": "der Fortschritt", "uk": "прогрес", "article": "der"}, {"de": "die Entscheidung", "uk": "рішення", "article": "die"}, {"de": "die Verantwortung", "uk": "відповідальність", "article": "die"}, {"de": "der Einfluss", "uk": "вплив", "article": "der"}, {"de": "die Gewohnheit", "uk": "звичка", "article": "die"}, {"de": "die Meinung", "uk": "думка", "article": "die"}, {"de": "das Verhalten", "uk": "поведінка", "article": "das"}, {"de": "die Fähigkeit", "uk": "здатність", "article": "die"}, {"de": "der Versuch", "uk": "спроба", "article": "der"}, {"de": "die Wirkung", "uk": "ефект/вплив", "article": "die"}, {"de": "das Beispiel", "uk": "приклад", "article": "das"}, {"de": "die Lösung", "uk": "рішення/розв'язання", "article": "die"}, {"de": "der Fehler", "uk": "помилка", "article": "der"}, {"de": "die Überraschung", "uk": "сюрприз", "article": "die"}, {"de": "der Zusammenhang", "uk": "зв'язок", "article": "der"}, {"de": "die Entwicklung", "uk": "розвиток", "article": "die"}, {"de": "scheitern", "uk": "зазнавати невдачі", "article": ""}, {"de": "überzeugen", "uk": "переконувати", "article": ""}, {"de": "verzichten", "uk": "відмовлятися", "article": ""}, {"de": "beeinflussen", "uk": "впливати", "article": ""}, {"de": "vergleichen", "uk": "порівнювати", "article": ""}, {"de": "analysieren", "uk": "аналізувати", "article": ""}, {"de": "anpassen", "uk": "пристосовуватися", "article": ""}, {"de": "herausfordernd", "uk": "складний/вимогливий", "article": ""}, {"de": "nachhaltig", "uk": "стійкий/екологічний", "article": ""}, {"de": "zuverlässig", "uk": "надійний", "article": ""}, {"de": "die Herausforderung", "uk": "виклик", "article": "die"}, {"de": "der Kompromiss", "uk": "компроміс", "article": "der"}, {"de": "die Kommunikation", "uk": "комунікація", "article": "die"}, {"de": "das Missverständnis", "uk": "непорозуміння", "article": "das"}, {"de": "die Zusammenarbeit", "uk": "співпраця", "article": "die"}, {"de": "der Widerspruch", "uk": "суперечність", "article": "der"}, {"de": "die Konsequenz", "uk": "наслідок", "article": "die"}, {"de": "die Priorität", "uk": "пріоритет", "article": "die"}, {"de": "das Gleichgewicht", "uk": "рівновага", "article": "das"}, {"de": "die Perspektive", "uk": "перспектива", "article": "die"}, {"de": "der Konflikt", "uk": "конфлікт", "article": "der"}, {"de": "die Integration", "uk": "інтеграція", "article": "die"}, {"de": "die Motivation", "uk": "мотивація", "article": "die"}, {"de": "einschränken", "uk": "обмежувати", "article": ""}, {"de": "ermutigen", "uk": "заохочувати", "article": ""}, {"de": "widersprechen", "uk": "суперечити", "article": ""}, {"de": "nachdenken", "uk": "роздумувати", "article": ""}, {"de": "berücksichtigen", "uk": "враховувати", "article": ""}], "2_3": [{"de": "die Gerechtigkeit", "uk": "справедливість", "article": "die"}, {"de": "die Einsamkeit", "uk": "самотність", "article": "die"}, {"de": "die Sehnsucht", "uk": "туга/прагнення", "article": "die"}, {"de": "das Bewusstsein", "uk": "свідомість", "article": "das"}, {"de": "der Zweifel", "uk": "сумнів", "article": "der"}, {"de": "die Würde", "uk": "гідність", "article": "die"}, {"de": "die Neugier", "uk": "цікавість", "article": "die"}, {"de": "der Ehrgeiz", "uk": "честолюбство", "article": "der"}, {"de": "die Dankbarkeit", "uk": "вдячність", "article": "die"}, {"de": "die Enttäuschung", "uk": "розчарування", "article": "die"}, {"de": "die Gelassenheit", "uk": "спокій/незворушність", "article": "die"}, {"de": "die Nostalgie", "uk": "ностальгія", "article": "die"}, {"de": "das Mitgefühl", "uk": "співчуття", "article": "das"}, {"de": "die Toleranz", "uk": "толерантність", "article": "die"}, {"de": "der Widerstand", "uk": "опір", "article": "der"}, {"de": "die Integrität", "uk": "доброчесність", "article": "die"}, {"de": "das Gleichgewicht", "uk": "рівновага", "article": "das"}, {"de": "die Veränderung", "uk": "зміна", "article": "die"}, {"de": "die Zugehörigkeit", "uk": "приналежність", "article": "die"}, {"de": "die Verletzlichkeit", "uk": "вразливість", "article": "die"}, {"de": "die Vergebung", "uk": "прощення", "article": "die"}, {"de": "das Selbstbewusstsein", "uk": "впевненість у собі", "article": "das"}, {"de": "die Akzeptanz", "uk": "прийняття", "article": "die"}, {"de": "die Leidenschaft", "uk": "пристрасть", "article": "die"}, {"de": "der Sinn", "uk": "сенс", "article": "der"}, {"de": "die Reife", "uk": "зрілість", "article": "die"}, {"de": "der Respekt", "uk": "повага", "article": "der"}, {"de": "die Offenheit", "uk": "відкритість", "article": "die"}, {"de": "die Treue", "uk": "вірність", "article": "die"}], "3_1": [{"de": "das Mikroskop", "uk": "мікроскоп", "article": "das"}, {"de": "der Archipel", "uk": "архіпелаг", "article": "der"}, {"de": "das Kaleidoskop", "uk": "калейдоскоп", "article": "das"}, {"de": "die Turbine", "uk": "турбіна", "article": "die"}, {"de": "der Stalagmit", "uk": "сталагміт", "article": "der"}, {"de": "die Galerie", "uk": "галерея", "article": "die"}, {"de": "das Labyrinth", "uk": "лабіринт", "article": "das"}, {"de": "der Katamaran", "uk": "катамаран", "article": "der"}, {"de": "die Schleuse", "uk": "шлюз", "article": "die"}, {"de": "das Gebirge", "uk": "гірський масив", "article": "das"}, {"de": "der Zeppelin", "uk": "цепелін", "article": "der"}, {"de": "das Observatorium", "uk": "обсерваторія", "article": "das"}, {"de": "die Infrastruktur", "uk": "інфраструктура", "article": "die"}, {"de": "das Ökosystem", "uk": "екосистема", "article": "das"}, {"de": "die Chromosom", "uk": "хромосома", "article": "die"}, {"de": "die Drohne", "uk": "дрон", "article": "die"}, {"de": "das Chromosom", "uk": "хромосома", "article": "das"}, {"de": "der Satellit", "uk": "супутник", "article": "der"}, {"de": "das Neuron", "uk": "нейрон", "article": "das"}, {"de": "die Partikel", "uk": "частинка", "article": "die"}, {"de": "der Reaktor", "uk": "реактор", "article": "der"}, {"de": "das Spektrum", "uk": "спектр", "article": "das"}, {"de": "die Elektrode", "uk": "електрод", "article": "die"}, {"de": "das Fossil", "uk": "скамянілість", "article": "das"}, {"de": "der Asteroid", "uk": "астероїд", "article": "der"}, {"de": "die Zelle", "uk": "клітина", "article": "die"}, {"de": "das Pigment", "uk": "пігмент", "article": "das"}, {"de": "der Reflex", "uk": "рефлекс", "article": "der"}, {"de": "das Enzym", "uk": "фермент", "article": "das"}], "3_2": [{"de": "die Nachhaltigkeit", "uk": "стійкість/сталий розвиток", "article": "die"}, {"de": "die Globalisierung", "uk": "глобалізація", "article": "die"}, {"de": "die Digitalisierung", "uk": "цифровізація", "article": "die"}, {"de": "die Polarisierung", "uk": "поляризація", "article": "die"}, {"de": "der Konsens", "uk": "консенсус", "article": "der"}, {"de": "die Inflation", "uk": "інфляція", "article": "die"}, {"de": "die Demokratie", "uk": "демократія", "article": "die"}, {"de": "die Propaganda", "uk": "пропаганда", "article": "die"}, {"de": "die Segregation", "uk": "сегрегація", "article": "die"}, {"de": "der Paradigmenwechsel", "uk": "зміна парадигми", "article": "der"}, {"de": "die Resilienz", "uk": "стресостійкість", "article": "die"}, {"de": "die Transparenz", "uk": "прозорість", "article": "die"}, {"de": "die Bürokratie", "uk": "бюрократія", "article": "die"}, {"de": "die Manipulation", "uk": "маніпуляція", "article": "die"}, {"de": "der Kompromiss", "uk": "компроміс", "article": "der"}, {"de": "die Dezentralisierung", "uk": "децентралізація", "article": "die"}, {"de": "die Automatisierung", "uk": "автоматизація", "article": "die"}, {"de": "die Konvergenz", "uk": "конвергенція", "article": "die"}, {"de": "die Fragmentierung", "uk": "фрагментація", "article": "die"}, {"de": "die Monopolisierung", "uk": "монополізація", "article": "die"}, {"de": "die Rationalisierung", "uk": "раціоналізація", "article": "die"}, {"de": "die Legalisierung", "uk": "легалізація", "article": "die"}, {"de": "die Radikalisierung", "uk": "радикалізація", "article": "die"}, {"de": "die Säkularisierung", "uk": "секуляризація", "article": "die"}, {"de": "die Marginalisierung", "uk": "маргіналізація", "article": "die"}], "3_3": [{"de": "die Ambivalenz", "uk": "амбівалентність", "article": "die"}, {"de": "die Vergänglichkeit", "uk": "швидкоплинність", "article": "die"}, {"de": "das Wohlbefinden", "uk": "благополуччя", "article": "das"}, {"de": "die Transzendenz", "uk": "трансцендентність", "article": "die"}, {"de": "die Absurdität", "uk": "абсурдність", "article": "die"}, {"de": "das Paradoxon", "uk": "парадокс", "article": "das"}, {"de": "die Kontingenz", "uk": "випадковість буття", "article": "die"}, {"de": "die Entfremdung", "uk": "відчуження", "article": "die"}, {"de": "die Authentizität", "uk": "автентичність", "article": "die"}, {"de": "das Dilemma", "uk": "дилема", "article": "das"}, {"de": "die Empathie", "uk": "емпатія", "article": "die"}, {"de": "die Subjektivität", "uk": "суб'єктивність", "article": "die"}, {"de": "die Relativität", "uk": "відносність", "article": "die"}, {"de": "die Selbstbestimmung", "uk": "самовизначення", "article": "die"}, {"de": "die Kontroverse", "uk": "суперечка/контроверза", "article": "die"}, {"de": "die Determination", "uk": "детермінізм", "article": "die"}, {"de": "die Erkenntnistheorie", "uk": "теорія пізнання", "article": "die"}, {"de": "das Nihilismus", "uk": "нігілізм", "article": "das"}, {"de": "die Dialektik", "uk": "діалектика", "article": "die"}, {"de": "das Axiom", "uk": "аксіома", "article": "das"}, {"de": "die Intersubjektivität", "uk": "інтерсуб'єктивність", "article": "die"}, {"de": "die Dekonstruktion", "uk": "деконструкція", "article": "die"}, {"de": "das Paradigma", "uk": "парадигма", "article": "das"}, {"de": "die Kausalität", "uk": "причинність", "article": "die"}, {"de": "die Ontologie", "uk": "онтологія", "article": "die"}]};
+
+// ── STORAGE ──
+const LS={
+  g:(k,d)=>{try{const v=localStorage.getItem('ds_'+k);return v!=null?JSON.parse(v):d}catch{return d}},
+  s:(k,v)=>{try{localStorage.setItem('ds_'+k,JSON.stringify(v))}catch{}}
+};
+function esc(s){if(!s)return'';const d=document.createElement('div');d.appendChild(document.createTextNode(s));return d.innerHTML;}
+
+// ── CONFIG ──
+let cfg=LS.g('cfg',{
+  diff:1,abs:1,hist:true,maxW:200,timer:60,rounds:10,
+  answerTime:0,voteTime:30,ttsAuto:false,
+  llm:{provider:'none',
+    anthropic:{key:'',model:'claude-sonnet-4-20250514'},
+    openai:{key:'',model:'gpt-4o'},
+    gemini:{key:'',model:'gemini-2.0-flash'}}
+});
+let usedW=LS.g('used',[]);
+let usedTopics=LS.g('topics',[]);
+let stats=LS.g('stats',{games:0,guessed:0,described:0,sessions:0,questions:0,totalR:0,cntR:0});
+
+// ── GAME STATE ──
+let G={
+  code:'',isHost:false,myId:'',myName:'',
+  mode:'wort',           // 'wort' | 'gesprach'
+  players:[],
+  // Wortspiel
+  di:0,round:0,word:null,guessed:[],sesWords:[],
+  // Gesprächsrunde
+  topic:null,question:null,qNum:0,answererIdx:0,votes:{},myVote:0,sesTopic:[],
+  // shared
+  tiInt:null,tiLeft:0,
+  peer:null,conn:null,peers:{}
+};
+G.amD=()=>G.players[G.di]?.id===G.myId;
+G.amA=()=>G.players[G.answererIdx]?.id===G.myId;
+
+// ── SCREENS ──
+let hist=['s-home'];
+function gS(id){
+  const p=hist[hist.length-1];if(p===id)return;
+  document.getElementById(p)?.classList.add('prev');
+  setTimeout(()=>document.getElementById(p)?.classList.remove('prev'),350);
+  document.querySelectorAll('.scr').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');hist.push(id);
+}
+function gB(){
+  if(hist.length>1)hist.pop();
+  const id=hist[hist.length-1];
+  document.querySelectorAll('.scr').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+function goTo(id){
+  document.querySelectorAll('.scr').forEach(s=>s.classList.remove('active','prev'));
+  document.getElementById(id).classList.add('active');hist=[id];
+}
+function setMode(m){
+  G.mode=m;
+  const app=document.getElementById('app');
+  app.className=m==='gesprach'?'mode-gespräch':'';
+}
+
+// ── PEER ──
+function mkPeer(id){
+  return new Promise((ok,fail)=>{
+    const p=new Peer(id,{host:'0.peerjs.com',port:443,path:'/',secure:true,
+      config:{iceServers:[{urls:'stun:stun.l.google.com:19302'}]}});
+    const t=setTimeout(()=>{try{p.destroy()}catch{}fail(new Error('timeout'))},12000);
+    p.on('open',pid=>{clearTimeout(t);G.peer=p;ok(pid);});
+    p.on('error',e=>{clearTimeout(t);fail(e);});
+  });
+}
+function hListen(){
+  G.peer.on('connection',c=>{
+    c.on('open',()=>{
+      G.peers[c.peer]=c;
+      c.on('data',m=>onGuest(c,m));
+      c.on('close',()=>{
+        delete G.peers[c.peer];
+        const disc=G.players.find(p=>p.pid===c.peer);
+        G.players=G.players.filter(p=>p.pid!==c.peer);
+        hcast({type:'STATE',players:G.players});
+        if(G.players.length<2){
+          toast((disc?.name||'Spieler')+' hat verlassen — Spiel beendet','terr');
+          const m={type:'GAME_OVER',players:G.players,mode:G.mode};hcast(m);showOver();return;
+        }
+        toast((disc?.name||'Spieler')+' hat das Spiel verlassen','terr');
+        if(G.mode==='wort'&&G.di>=G.players.length)G.di=G.di%G.players.length;
+        if(G.mode==='gesprach'&&G.answererIdx>=G.players.length)G.answererIdx=G.answererIdx%G.players.length;
+        renderLobby();
+      });
+    });
+  });
+}
+function hcast(m,skip){Object.entries(G.peers).forEach(([pid,c])=>{if(pid!==skip)try{c.send(m)}catch{}});}
+function gsend(m){try{G.conn?.send(m)}catch{}}
+
+function onGuest(c,m){
+  if(!G.isHost)return;
+  if(m.type==='JOIN_REQ'){
+    const p={id:m.id,name:m.name,score:0,isHost:false,totalR:0,cntR:0,pid:c.peer};
+    if(!G.players.find(x=>x.id===p.id))G.players.push(p);
+    hcast({type:'STATE',players:G.players});renderLobby();
+  } else if(m.type==='GUESSED'){
+    handleGuessed(m.id);hcast({type:'GUESSED',id:m.id},c.peer);
+    if(G.amD()){rGuessers();document.getElementById('btn-dn').disabled=false;}
+    rGBoard();
+  } else if(m.type==='WORT_DONE_G'){
+    // Guest describer ended the round — apply scores and broadcast result
+    G.word=m.word;G.guessed=m.guessed||[];
+    G.sesWords.push(m.word);
+    if(cfg.hist&&m.word)addUsed(m.word);
+    const sc=m.sc||{};
+    G.players.forEach(p=>{if(sc[p.id])p.score+=sc[p.id];});
+    const rm={type:'WORT_RESULT',roundScores:sc,players:G.players,word:m.word,guessed:m.guessed};
+    hcast(rm);showWortResult(rm);
+  } else if(m.type==='WORD_UPDATE'){
+    // Guest describer got an AI-generated word — store and relay
+    G.word=m.word;
+    hcast({type:'WORD',word:m.word},c.peer);
+  } else if(m.type==='ANSWER_DONE'){
+    // Guest answerer finished — host relays to all others + shows on own screen
+    G.question=m.q;G.answererIdx=m.ai;
+    hcast({type:'ANSWER_DONE',q:m.q,ai:m.ai},c.peer);
+    showAfterAnswer();
+  } else if(m.type==='AI_OPINION'){
+    // Guest answerer generated opinion — host broadcasts to everyone
+    const op=m.opinion;
+    hcast({type:'AI_OPINION',opinion:op},c.peer);
+    showAIOpinionFromPeer(op);
+  }
+}
+
+function onHost(m){
+  switch(m.type){
+    case 'STATE':G.players=m.players;renderWait();break;
+    case 'START_WORT':G.players=m.players;G.di=m.di;G.round=m.round;setMode('wort');beginWortRound();break;
+    case 'START_GESPRACH':G.players=m.players;setMode('gesprach');goTo('s-twait');renderTWait();break;
+    case 'WORD':G.word=m.word;showWordUI();break;
+    case 'GUESSED':handleGuessed(m.id);if(G.amD()){rGuessers();document.getElementById('btn-dn').disabled=false;}rGBoard();break;
+    case 'WORT_RESULT':G.word=m.word;G.players=m.players;if(cfg.hist&&m.word)addUsed(m.word);showWortResult(m);break;
+    case 'NEXT_WORT':G.di=m.di;G.round=m.round;G.players=m.players;beginWortRound();break;
+    case 'TOPIC_CHOSEN':G.topic=m.topic;G.answererIdx=0;G.qNum=0;showTopicToAll(m.topic);break;
+    case 'QUESTION':G.question=m.q;G.qNum=m.qNum;G.answererIdx=m.ai;showQuestion();break;
+    case 'START_VOTE':G.question=m.q;showAfterAnswer();break;
+    case 'ANSWER_DONE':G.question=m.q;G.answererIdx=m.ai;showAfterAnswer();break;
+    case 'VOTE_RESULT':G.players=m.players;showVoteResult(m);break;
+    case 'NEXT_Q':G.answererIdx=m.ai;G.qNum=m.qNum;goTo('s-question');genAndShowQ();break;
+    case 'GAME_OVER':G.players=m.players;G.mode=m.mode||'wort';showOver();break;
+    case 'AI_OPINION':showAIOpinionFromPeer(m.opinion);break;
+  }
+}
+
+function handleGuessed(id){if(!G.guessed.includes(id))G.guessed.push(id);}
+
+// ── CREATE / JOIN ──
+async function doCreate(){
+  const n=document.getElementById('h-name').value.trim();
+  if(!n){toast('Name eingeben','terr');return;}
+  G.myName=n;G.myId='u'+Date.now();G.isHost=true;
+  G.code=genCode();G.players=[{id:G.myId,name:n,score:0,isHost:true,totalR:0,cntR:0,pid:null}];
+  G.sesWords=[];G.sesTopic=[];G.mode='wort';
+  toast('Verbinde…');
+  try{
+    const pid=await mkPeer('ds-'+G.code.toLowerCase());
+    G.players[0].pid=pid;hListen();renderLobby();gS('s-lobby');
+    const el=document.getElementById('lob-conn');el.className='cbdg cok';el.innerHTML='<div class="dlv"></div>&nbsp;Verbunden';
+    toast('Bereit! Code: '+G.code,'tok');
+  }catch(e){
+    try{await mkPeer(undefined);G.players[0].pid=G.peer.id;hListen();renderLobby();gS('s-lobby');}
+    catch(e2){toast('Netzwerkfehler: '+e2.message,'terr');}
+  }
+}
+
+async function doJoin(){
+  const n=document.getElementById('h-name').value.trim();
+  const code=document.getElementById('h-code').value.trim().toUpperCase();
+  if(!n){toast('Name eingeben','terr');return;}
+  if(!code){toast('Code eingeben','terr');return;}
+  G.myName=n;G.myId='u'+Date.now();G.isHost=false;G.code=code;G.players=[];
+  toast('Verbinde…');
+  try{
+    await mkPeer(undefined);
+    const c=G.peer.connect('ds-'+code.toLowerCase(),{reliable:true});G.conn=c;
+    c.on('open',()=>{
+      c.send({type:'JOIN_REQ',id:G.myId,name:n});
+      document.getElementById('wt-c').textContent=code;
+      const el=document.getElementById('wt-s');el.className='cbdg cok';el.innerHTML='<div class="dlv"></div>&nbsp;Verbunden';
+      gS('s-wait');toast('Verbunden!','tok');
+    });
+    c.on('data',m=>onHost(m));
+    c.on('close',()=>{toast('Verbindung zum Host unterbrochen','terr');setTimeout(()=>goTo('s-home'),3000);});
+    c.on('error',e=>toast('Fehler: '+e.type,'terr'));
+  }catch(e){toast('Verbindung fehlgeschlagen: '+e.message,'terr');}
+}
+
+function leaveRoom(){
+  clearTI();if(G.peer)try{G.peer.destroy()}catch{}
+  G.peer=null;G.conn=null;G.peers={};
+  initHome();goTo('s-home');
+}
+function goHome(){leaveRoom();}
+
+// ── LOBBY ──
+let selModeVal=null;
+function selMode(m){
+  selModeVal=m;
+  document.getElementById('mc-w').className='mode-card'+(m==='wort'?' sel-w':'');
+  document.getElementById('mc-g').className='mode-card'+(m==='gesprach'?' sel-g':'');
+  const warn=document.getElementById('lob-mode-warn');
+  if(m==='gesprach'&&cfg.llm.provider==='none'){warn.style.display='block';}
+  else warn.style.display='none';
+  checkLobbyBtn();
+}
+
+function checkLobbyBtn(){
+  const ok=G.players.length>=2&&selModeVal!==null;
+  document.getElementById('btn-st').disabled=!ok;
+}
+
+function renderLobby(){
+  document.getElementById('lob-c').textContent=G.code;
+  document.getElementById('lob-n').textContent=G.players.length;
+  document.getElementById('lob-pl').innerHTML=G.players.map(p=>`
+    <div class="pi ${p.id===G.myId?'me':''}">
+      <div class="pl"><div class="av">${esc(p.name[0].toUpperCase())}</div>
+        <span class="pn">${esc(p.name)}${p.id===G.myId?' (du)':''}</span></div>
+      ${p.isHost?'<span class="tag ta">Host</span>':'<span class="tag td2">Spieler</span>'}
+    </div>`).join('');
+  checkLobbyBtn();
+  hcast({type:'STATE',players:G.players});
+}
+
+function renderWait(){
+  document.getElementById('wt-pl').innerHTML=G.players.map(p=>`
+    <div class="pi ${p.id===G.myId?'me':''}">
+      <div class="pl"><div class="av">${esc(p.name[0].toUpperCase())}</div>
+        <span class="pn">${esc(p.name)}${p.id===G.myId?' (du)':''}</span></div>
+      ${p.isHost?'<span class="tag ta">Host</span>':''}
+    </div>`).join('');
+}
+
+function renderTWait(){
+  document.getElementById('tw-pl').innerHTML=G.players.map(p=>`
+    <div class="pi ${p.id===G.myId?'me':''}">
+      <div class="pl"><div class="av">${esc(p.name[0].toUpperCase())}</div>
+        <span class="pn">${esc(p.name)}</span></div>
+    </div>`).join('');
+}
+
+function cpyCode(){navigator.clipboard?.writeText(G.code).then(()=>toast('Code kopiert!','tok')).catch(()=>{});}
+
+// ── START GAME ──
+function startGame(){
+  if(!selModeVal||G.players.length<2)return;
+  G.mode=selModeVal;setMode(G.mode);
+  G.players.forEach(p=>{p.score=0;p.totalR=0;p.cntR=0;});
+  if(G.mode==='wort'){
+    G.round=1;G.di=0;G.sesWords=[];G.guessed=[];
+    hcast({type:'START_WORT',players:G.players,di:0,round:1});
+    beginWortRound();
+  } else {
+    if(cfg.llm.provider==='none'){toast('Bitte zuerst LLM konfigurieren','terr');return;}
+    G.qNum=0;G.answererIdx=0;G.sesTopic=[];
+    hcast({type:'START_GESPRACH',players:G.players});
+    goTo('s-topics');loadTopics();
+  }
+}
+
+// ═══════════════════════════════
+// WORTSPIEL LOGIC
+// ═══════════════════════════════
+function beginWortRound(){
+  G.guessed=[];clearTI();
+  const desc=G.players[G.di];
+  if(G.amD()){
+    goTo('s-desc');
+    document.getElementById('d-rn').textContent=G.round;
+    document.getElementById('d-rs').textContent=cfg.rounds;
+    document.getElementById('d-ld').style.display='block';
+    document.getElementById('d-ws').style.display='none';
+    document.getElementById('btn-dn').disabled=true;
+    rGuessers();
+    const w=genWord();G.word=w;
+    if(G.isHost)hcast({type:'WORD_START'});
+    else gsend({type:'WORD_START'});
+    showWordUI();
+    startTimer('d-tm',cfg.timer,()=>endRound());
+  } else {
+    goTo('s-guess');
+    document.getElementById('g-rn').textContent=G.round;
+    document.getElementById('g-rs').textContent=cfg.rounds;
+    document.getElementById('g-dn').textContent=desc.name;
+    document.getElementById('g-wt').style.display='block';
+    document.getElementById('g-bt').style.display='none';
+    document.getElementById('g-ok').style.display='none';
+    rGBoard();startTimer('g-tm',cfg.timer,()=>{});
+    setTimeout(()=>{
+      if(document.getElementById('s-guess').classList.contains('active')){
+        document.getElementById('g-wt').style.display='none';
+        document.getElementById('g-bt').style.display='block';
+      }
+    },1500);
+  }
+}
+
+function showWordUI(){
+  const w=G.word;if(!w)return;
+  document.getElementById('d-ld').style.display='none';
+  document.getElementById('d-ws').style.display='block';
+  document.getElementById('d-at').textContent=w.article||''
+  document.getElementById('d-de').textContent=w.de;
+  document.getElementById('d-uk').textContent='🇺🇦 '+w.uk;
+  const db=['@','🟢 A1–A2','🟡 B1–B2','🔴 C1–C2'][cfg.diff];
+  const ab=['@','📦 Konkret','🔀 Gemischt','💭 Abstrakt'][cfg.abs];
+  document.getElementById('d-bd').innerHTML=`<span class="tag ta">${db}</span><span class="tag td2">${ab}</span>`;
+}
+
+function rGuessers(){
+  const others=G.players.filter(p=>p.id!==G.players[G.di].id);
+  document.getElementById('d-gs').innerHTML=others.length
+    ?others.map(p=>`<button class="gbtn ${G.guessed.includes(p.id)?'done':''}" onclick="markG('${esc(p.id)}')">
+      <div style="display:flex;align-items:center;gap:8px"><div class="av" style="width:26px;height:26px;font-size:.72rem">${esc(p.name[0].toUpperCase())}</div>${esc(p.name)}</div>
+      <span class="chk">✓</span></button>`).join('')
+    :'<div style="color:var(--tdim);font-size:.82rem;padding:6px">Keine anderen Spieler</div>';
+}
+
+function markG(id){
+  if(G.guessed.includes(id))return;
+  G.guessed.push(id);
+  const m={type:'GUESSED',id};
+  if(G.isHost)hcast(m);else gsend(m);
+  rGuessers();document.getElementById('btn-dn').disabled=false;
+}
+
+function iGuessed(){
+  document.getElementById('g-bt').style.display='none';
+  document.getElementById('g-ok').style.display='block';
+  const m={type:'GUESSED',id:G.myId};
+  if(G.isHost){handleGuessed(G.myId);hcast(m);}else gsend(m);
+  stats.guessed++;LS.s('stats',stats);
+}
+
+function rGBoard(){
+  document.getElementById('g-bd').innerHTML=G.players.map(p=>`
+    <div class="pi ${p.id===G.myId?'me':''}">
+      <div class="pl"><div class="av">${esc(p.name[0].toUpperCase())}</div><span class="pn">${esc(p.name)}</span></div>
+      <div class="ps">${p.score}</div>
+    </div>`).join('');
+}
+
+function noOne(){G.guessed=[];endRound();}
+
+function endRound(){
+  clearTI();if(!G.amD())return;
+  const did=G.players[G.di].id;const sc={};
+  G.guessed.forEach(id=>{sc[id]=(sc[id]||0)+2;});
+  if(G.guessed.length>0)sc[did]=(sc[did]||0)+G.guessed.length;
+  G.sesWords.push(G.word);
+  if(cfg.hist&&G.word)addUsed(G.word);
+  stats.described++;LS.s('stats',stats);
+  if(G.isHost){
+    G.players.forEach(p=>{if(sc[p.id])p.score+=sc[p.id];});
+    const m={type:'WORT_RESULT',roundScores:sc,players:G.players,word:G.word,guessed:G.guessed};
+    hcast(m);showWortResult(m);
+  } else {
+    gsend({type:'WORT_DONE_G',sc,word:G.word,guessed:G.guessed});
+    goTo('s-wres');
+    document.getElementById('wr-btn').style.display='none';
+    document.getElementById('wr-wt').style.display='block';
+  }
+}
+
+function showWortResult(m){
+  clearTI();goTo('s-wres');
+  const w=m.word||{};
+  document.getElementById('wr-ic').textContent=(m.guessed?.length>0)?'🎊':'😅';
+  document.getElementById('wr-wd').textContent=(w.article?w.article+' ':'')+( w.de||'?');
+  document.getElementById('wr-uk').textContent=w.uk?'🇺🇦 '+w.uk:'';
+  const sc=m.roundScores||{};
+  document.getElementById('wr-sc').innerHTML=m.players.map(p=>{
+    const d=sc[p.id]||0;
+    return`<div class="srow">
+      <div style="display:flex;align-items:center;gap:8px"><div class="av" style="width:26px;height:26px;font-size:.72rem">${esc(p.name[0].toUpperCase())}</div>${esc(p.name)}</div>
+      <span class="dl ${d>0?'dp':d<0?'dn':'dz'}">${d>0?'+'+d:d===0?'–':d}</span></div>`;}).join('');
+  const sorted=[...m.players].sort((a,b)=>b.score-a.score);
+  document.getElementById('wr-tt').innerHTML=sorted.map((p,i)=>`
+    <div class="pi ${p.id===G.myId?'me':''}">
+      <div class="pl"><span style="font-size:.9rem;color:var(--tdim);width:18px">${i+1}.</span>
+        <div class="av">${esc(p.name[0].toUpperCase())}</div><span class="pn">${esc(p.name)}</span></div>
+      <div class="ps">${p.score}</div>
+    </div>`).join('');
+  document.getElementById('wr-btn').style.display=G.isHost?'block':'none';
+  document.getElementById('wr-wt').style.display=G.isHost?'none':'block';
+}
+
+function nextRound(){
+  if(G.round>=cfg.rounds){
+    const m={type:'GAME_OVER',players:G.players,mode:'wort'};hcast(m);showOver();return;
+  }
+  G.di=(G.di+1)%G.players.length;G.round++;
+  hcast({type:'NEXT_WORT',di:G.di,round:G.round,players:G.players});beginWortRound();
+}
+
+// ═══════════════════════════════
+// GESPRÄCHSRUNDE LOGIC
+// ═══════════════════════════════
+async function loadTopics(){
+  document.getElementById('ts-load').style.display='block';
+  document.getElementById('ts-list').innerHTML='';
+  document.getElementById('btn-topic').disabled=true;
+  document.getElementById('btn-regen').style.display='none';
+  // Clear custom input selection
+  window._selTopic=null;
+  document.getElementById('ts-custom').value='';
+  document.getElementById('btn-custom-sel').disabled=true;
+  const topics=await genTopics();
+  document.getElementById('ts-load').style.display='none';
+  if(!topics?.length){
+    document.getElementById('ts-list').innerHTML='<div style="color:var(--red);font-size:.82rem;text-align:center;padding:12px">Fehler beim Laden — bitte eigenes Thema eingeben</div>';
+    return;
+  }
+  window._topics=topics;
+  document.getElementById('ts-list').innerHTML=topics.map((t,i)=>`
+    <div class="topic-card" id="tc-${i}" onclick="selectTopic(${i},this)">
+      <div class="topic-de">${t.de}</div>
+      <div class="topic-uk" style="font-size:.76rem;color:var(--tdim);margin-top:4px;line-height:1.4">${t.uk}</div>
+    </div>`).join('');
+  document.getElementById('btn-regen').style.display='block';
+}
+
+async function regenTopics(){await loadTopics();}
+
+function selectTopic(i,el){
+  document.querySelectorAll('.topic-card').forEach(c=>c.classList.remove('sel'));
+  el.classList.add('sel');
+  window._selTopic=window._topics[i];
+  // Clear custom input if topic card selected
+  document.getElementById('ts-custom').value='';
+  document.getElementById('btn-custom-sel').disabled=true;
+  document.getElementById('btn-topic').disabled=false;
+}
+
+function onCustomTopicInput(val){
+  document.getElementById('btn-custom-sel').disabled=val.trim().length<3;
+}
+
+function selectCustomTopic(){
+  const val=document.getElementById('ts-custom').value.trim();
+  if(val.length<3)return;
+  // Deselect AI topic cards
+  document.querySelectorAll('.topic-card').forEach(c=>c.classList.remove('sel'));
+  // Set custom topic — de and uk same (LLM will handle in questions)
+  window._selTopic={de:val,uk:val,custom:true};
+  document.getElementById('btn-topic').disabled=false;
+  toast('Eigenes Thema ausgewählt ✓','tok');
+}
+
+function confirmTopic(){
+  const t=window._selTopic;if(!t)return;
+  G.topic=t;G.qNum=0;G.answererIdx=0;
+  addUsedTopic(t);G.sesTopic.push(t);
+  hcast({type:'TOPIC_CHOSEN',topic:t});showTopicToAll(t);
+}
+
+function showTopicToAll(topic){
+  G.topic=topic;G.qNum=0;goTo('s-question');genAndShowQ();
+}
+
+async function genAndShowQ(){
+  G.qNum++;G.votes={};G.myVote=0;
+  const answerer=G.players[G.answererIdx];
+  document.getElementById('q-num').textContent=G.qNum;
+  document.getElementById('q-n2').textContent='Frage №'+G.qNum;
+  document.getElementById('q-topic').textContent=G.topic?.de||''
+  document.getElementById('q-ans').textContent=answerer?.name||'—';
+  document.getElementById('q-ld').style.display='block';
+  document.getElementById('q-cnt').style.display='none';
+  document.getElementById('q-uk').classList.remove('show');
+  if(cfg.answerTime>0)startTimer('q-tm',cfg.answerTime,()=>doneAnswering());
+  else document.getElementById('q-tm').textContent='';
+  if(G.amA()){document.getElementById('q-actrl').style.display='block';document.getElementById('q-owait').style.display='none';}
+  else{document.getElementById('q-actrl').style.display='none';document.getElementById('q-owait').style.display='block';}
+  document.getElementById('q-pg').style.width=Math.min(G.qNum/G.players.length*100,100)+'%';
+  if(G.isHost){
+    const q=await genQuestion();G.question=q;
+    hcast({type:'QUESTION',q,qNum:G.qNum,ai:G.answererIdx});showQuestion();
+  }
+}
+
+function showQuestion(){
+  const q=G.question;if(!q)return;
+  document.getElementById('q-ld').style.display='none';
+  document.getElementById('q-cnt').style.display='block';
+  document.getElementById('q-de').textContent=q.de;
+  document.getElementById('q-uk').textContent=q.uk;
+  document.getElementById('q-uk').classList.remove('show');
+  const tBtn=document.getElementById('btn-qtrans');if(tBtn)tBtn.textContent='🇺🇦 Übersetzung anzeigen';
+  // Auto-read question aloud if TTS enabled
+  if(cfg.ttsAuto) setTimeout(()=>ttsSpeak(q.de,'de-DE'),600);
+}
+
+function toggleQTrans(){
+  const el=document.getElementById('q-uk');const show=el.classList.toggle('show');
+  document.getElementById('btn-qtrans').textContent=show?'🇺🇦 Übersetzung verbergen':'🇺🇦 Übersetzung anzeigen';
+}
+
+function doneAnswering(){
+  clearTI();
+  // Broadcast DONE to all — no voting, just show after-answer screen
+  const m={type:'ANSWER_DONE',q:G.question,ai:G.answererIdx};
+  if(G.isHost){hcast(m);showAfterAnswer();}
+  else{gsend(m);showAfterAnswer();}
+}
+
+function showAfterAnswer(){
+  clearTI();
+  goTo('s-vote');
+  stats.questions++;LS.s('stats',stats);
+  resetVAICard();
+  document.getElementById('v-nm').textContent=G.players[G.answererIdx]?.name||'—';
+  document.getElementById('v-q').textContent=G.question?.de||'';
+  const amA=G.amA();
+  document.getElementById('v-answerer-ctrl').style.display=amA?'block':'none';
+  document.getElementById('v-others-wait').style.display=!amA?'block':'none';
+  document.getElementById('v-host-ctrl').style.display=G.isHost?'block':'none';
+  document.getElementById('v-guest-wait').style.display=(!G.isHost&&!amA)?'block':'none';
+  // If answerer is also host, show both
+  if(amA&&G.isHost){
+    document.getElementById('v-guest-wait').style.display='none';
+    document.getElementById('v-others-wait').style.display='none';
+  }
+}
+
+// Kept for compatibility — redirects to new flow
+function showVoteResult(m){
+  G.players=m.players||G.players;
+  showAfterAnswer();
+}
+
+function nextQuestion(){
+  G.answererIdx=(G.answererIdx+1)%G.players.length;G.qNum++;
+  hcast({type:'NEXT_Q',ai:G.answererIdx,qNum:G.qNum});goTo('s-question');genAndShowQ();
+}
+
+function endTopic(){hcast({type:'GAME_OVER',players:G.players,mode:'gesprach'});showOver();}
+
+// ═══════════════════════════════
+// GAME OVER
+// ═══════════════════════════════
+function showOver(){
+  clearTI();goTo('s-over');stats.games++;LS.s('stats',stats);
+  document.getElementById('ov-ico').textContent=G.mode==='gesprach'?'🎙️':'🏆';
+  const sorted=[...G.players].sort((a,b)=>b.score-a.score);
+  document.getElementById('ov-bd').innerHTML=sorted.map((p,i)=>`
+    <div class="pi ${p.id===G.myId?'me':''}">
+      <div class="pl"><span style="font-size:1.2rem">${['🥇','🥈','🥉','4.','5.','6.','7.'][i]||(i+1)+'.'}</span>
+        <div class="av">${esc(p.name[0].toUpperCase())}</div><span class="pn">${esc(p.name)}</span></div>
+      <div class="ps">${typeof p.score==='number'&&p.score%1!==0?p.score.toFixed(1):p.score}</div>
+    </div>`).join('');
+  if(G.mode==='wort'){
+    document.getElementById('ov-hist-title').textContent='Heutige Wörter';
+    document.getElementById('ov-hist').innerHTML=G.sesWords.filter(Boolean).map(w=>
+      `<span class="wchip">${w.de} <span style="opacity:.5;font-size:.7em">${w.uk}</span></span>`).join('')||'<span style="color:var(--tdim)">Keine</span>';
+  } else {
+    document.getElementById('ov-hist-title').textContent='Themen dieser Sitzung';
+    document.getElementById('ov-hist').innerHTML=G.sesTopic.map(t=>
+      `<span class="wchip">${t.de}</span>`).join('')||'<span style="color:var(--tdim)">Keine</span>';
+  }
+}
+
+function playAgain(){
+  G.players.forEach(p=>{p.score=0;p.totalR=0;p.cntR=0;});
+  G.sesWords=[];G.sesTopic=[];selModeVal=null;
+  if(G.isHost){renderLobby();goTo('s-lobby');}else goTo('s-wait');
+}
+
+// ── TIMER ──
+function startTimer(elId,sec,onEnd){
+  clearTI();G.tiLeft=sec;updT(elId,G.tiLeft);
+  G.tiInt=setInterval(()=>{G.tiLeft--;updT(elId,G.tiLeft);if(G.tiLeft<=0){clearTI();onEnd();}},1000);
+}
+function updT(id,v){
+  const el=document.getElementById(id);if(!el)return;
+  el.textContent=v>0?v:'';
+  el.className='tring'+(v<=10?' dng':v<=20?' wrn':'');
+}
+function clearTI(){if(G.tiInt){clearInterval(G.tiInt);G.tiInt=null;}}
+
+// ── WORD GENERATION (offline) ──
+function genWord(){
+  const key=`${cfg.diff}_${cfg.abs}`;
+  const pool=WORDS[key]||WORDS['1_1'];
+  const used=new Set(usedW.map(w=>w.de));
+  const av=pool.filter(w=>!used.has(w.de));
+  const src=av.length?av:pool;
+  const w=src[Math.floor(Math.random()*src.length)];
+  // If LLM configured, use async gen — but for now return fallback immediately
+  // (async LLM word gen happens if apiKey present, otherwise offline)
+  if(cfg.llm.provider!=='none'){
+    // trigger async gen and update UI when done
+    genWordAI().then(aiw=>{if(aiw){G.word=aiw;showWordUI();if(G.isHost)hcast({type:'WORD',word:aiw});else gsend({type:'WORD_UPDATE',word:aiw});}}).catch(()=>{});
+  }
+  return w;
+}
+
+async function genWordAI(){
+  const dm={1:'A1-A2 basic everyday German',2:'B1-B2 intermediate German',3:'C1-C2 advanced German'};
+  const am={1:'concrete nouns (objects, animals, food, places)',2:'mix of concrete and simple abstract',3:'abstract concepts, emotions, philosophical ideas'};
+  const ex=usedW.slice(-60).map(w=>w.de).join(', ');
+  const p=`Generate ONE German word for a word-guessing game.
+Difficulty: ${dm[cfg.diff]}, Type: ${am[cfg.abs]}
+Do NOT use: ${ex||'none'}. Include article if noun.
+JSON only: {"de":"das Beispiel","uk":"приклад","article":"das"}`;
+  try{const txt=await callLLM(p);return JSON.parse(txt.replace(/\`\`\`json|\`\`\`/g,'').trim());}
+  catch{return null;}
+}
+
+// ── LLM CALLS ──
+async function callLLM(prompt){
+  const p=cfg.llm.provider;
+  if(p==='anthropic')return callAnthropic(prompt);
+  if(p==='openai')return callOpenAI(prompt);
+  if(p==='gemini')return callGemini(prompt);
+  throw new Error('No LLM');
+}
+async function callAnthropic(prompt){
+  const c=cfg.llm.anthropic;
+  const aModel=c.custom||c.model||'claude-sonnet-4-20250514';
+  const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',
+    headers:{'Content-Type':'application/json','x-api-key':c.key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+    body:JSON.stringify({model:aModel,max_tokens:600,messages:[{role:'user',content:prompt}]})});
+  const d=await r.json();if(d.error)throw new Error(d.error.message);
+  return(d.content?.[0]?.text||'').replace(/\`\`\`json|\`\`\`/g,'').trim();
+}
+async function callOpenAI(prompt){
+  const c=cfg.llm.openai;
+  const oModel=c.custom||c.model||'gpt-4o';
+  const r=await fetch('https://api.openai.com/v1/chat/completions',{method:'POST',
+    headers:{'Content-Type':'application/json','Authorization':'Bearer '+c.key},
+    body:JSON.stringify({model:oModel,max_tokens:600,
+      messages:[{role:'system',content:'Respond with valid JSON only.'},{role:'user',content:prompt}]})});
+  const d=await r.json();if(d.error)throw new Error(d.error.message);
+  return(d.choices?.[0]?.message?.content||'').replace(/\`\`\`json|\`\`\`/g,'').trim();
+}
+async function callGemini(prompt){
+  const c=cfg.llm.gemini;
+  const gModel=c.custom||c.model||'gemini-2.0-flash';
+  const url=`https://generativelanguage.googleapis.com/v1beta/models/${gModel}:generateContent?key=${c.key}`;
+  const r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({contents:[{parts:[{text:prompt}]}],generationConfig:{maxOutputTokens:600}})});
+  const d=await r.json();if(d.error)throw new Error(d.error.message);
+  return(d.candidates?.[0]?.content?.parts?.[0]?.text||'').replace(/\`\`\`json|\`\`\`/g,'').trim();
+}
+
+// ── TOPIC / QUESTION GEN ──
+async function genTopics(){
+  const dm={1:'A1-A2: simple everyday topics for German beginners. Short, clear sentences.',
+    2:'B1-B2: intermediate social and cultural topics.',
+    3:'C1-C2: complex philosophical, political or ethical topics.'};
+  const used=usedTopics.slice(-30).map(t=>t.de).join('; ');
+  const p=`Generate exactly 4 CONTROVERSIAL or OPINION-BASED discussion topics in German for a language group (4 Ukrainian learners + 1 German native speaker).
+Level: ${dm[cfg.diff]}
+Topics must spark genuine debate where people can have different valid opinions.
+NOT these already used: ${used||'none yet'}
+Each topic should be phrased as a question or provocative statement.
+
+Respond ONLY with a valid JSON array of exactly 4 items (no markdown):
+[
+  {"de": "Soll man Kindern Smartphones erst ab 14 Jahren erlauben?", "uk": "Чи варто дозволяти дітям смартфони лише з 14 років?"},
+  {"de": "...", "uk": "..."},
+  {"de": "...", "uk": "..."},
+  {"de": "...", "uk": "..."}
+]`;
+  try{
+    const txt=await callLLM(p);
+    const parsed=JSON.parse(txt.replace(/```json|```/g,'').trim());
+    return Array.isArray(parsed)?parsed.slice(0,4):null;
+  }
+  catch(e){toast('LLM-Fehler: '+e.message,'terr');return null;}
+}
+
+async function genQuestion(){
+  const answerer=G.players[G.answererIdx];
+  const p=`You facilitate a German conversation group (B1-B2 learners).
+Topic: "${G.topic?.de}". Question number: ${G.qNum}. For: ${answerer?.name||'player'}.
+Generate ONE open-ended, controversial follow-up question. German B1-B2 level.
+JSON only: {"de":"Was denkst du...","uk":"Що ти думаєш..."}`;
+  try{return JSON.parse(await callLLM(p));}
+  catch{return {de:'Was denkst du über dieses Thema?',uk:'Що ти думаєш про цю тему?'};}
+}
+
+// ── USED WORDS / TOPICS ──
+function addUsed(w){
+  if(!w?.de||usedW.find(u=>u.de===w.de))return;
+  usedW.push({de:w.de,uk:w.uk,addedAt:Date.now()});
+  while(usedW.length>cfg.maxW)usedW.shift();LS.s('used',usedW);
+}
+function clrDB(){if(!confirm('Wort-Datenbank löschen?'))return;usedW=[];LS.s('used',usedW);updDB();toast('Gelöscht','tok');}
+function updDB(){
+  document.getElementById('dbi').textContent=usedW.length+' / '+cfg.maxW+' Wörter';
+  document.getElementById('dbp').innerHTML=usedW.slice(-10).reverse().map(w=>
+    `<span class="wchip">${w.de} <span style="opacity:.5;font-size:.7em">${w.uk}</span></span>`).join('');
+}
+function addUsedTopic(t){
+  if(!t?.de||usedTopics.find(u=>u.de===t.de))return;
+  usedTopics.push({de:t.de,uk:t.uk,addedAt:Date.now()});
+  while(usedTopics.length>200)usedTopics.shift();LS.s('topics',usedTopics);
+}
+function clrTopics(){if(!confirm('Themen-Verlauf löschen?'))return;usedTopics=[];LS.s('topics',usedTopics);updTopics();toast('Gelöscht','tok');}
+function updTopics(){document.getElementById('thi').textContent=usedTopics.length+' Themen';}
+
+// ── SETTINGS UI ──
+function lsUI(){
+  sSt('sg-d',cfg.diff);sSt('sg-a',cfg.abs);uSD('sg-d','dd');uSD('sg-a','da');
+  setTog('t-h',cfg.hist);
+  document.getElementById('nv-m').textContent=cfg.maxW;
+  document.getElementById('nv-t').textContent=cfg.timer;
+  document.getElementById('nv-r').textContent=cfg.rounds;
+  document.getElementById('nv-at').textContent=cfg.answerTime;
+  document.getElementById('nv-vt').textContent=cfg.voteTime;
+  const llm=cfg.llm;
+  selPByName(llm.provider||'none');
+  document.getElementById('ak').value=llm.anthropic?.key||'';
+  document.getElementById('ok').value=llm.openai?.key||'';
+  document.getElementById('gk').value=llm.gemini?.key||'';
+  sSt('ms-a',llm.anthropic?.model||'claude-sonnet-4-20250514');
+  sSt('ms-o',llm.openai?.model||'gpt-4o');
+  sSt('ms-g',llm.gemini?.model||'gemini-2.0-flash');
+  document.getElementById('ak-model').value=llm.anthropic?.custom||'';
+  document.getElementById('ok-model').value=llm.openai?.custom||'';
+  document.getElementById('gk-model').value=llm.gemini?.custom||'';
+  updDB();updTopics();
+  setTog('t-tts',cfg.ttsAuto||false);
+}
+
+function saveCfg(){
+  cfg.diff=parseInt(sGet('sg-d'));cfg.abs=parseInt(sGet('sg-a'));
+  cfg.hist=document.getElementById('t-h').classList.contains('on');
+  cfg.maxW=parseInt(document.getElementById('nv-m').textContent);
+  cfg.timer=parseInt(document.getElementById('nv-t').textContent);
+  cfg.rounds=parseInt(document.getElementById('nv-r').textContent);
+  cfg.answerTime=parseInt(document.getElementById('nv-at').textContent);
+  cfg.voteTime=parseInt(document.getElementById('nv-vt').textContent);
+  const p=document.querySelector('#llm-prov .llm-opt.on')?.dataset.p||'none';
+  cfg.llm={provider:p,
+    anthropic:{key:document.getElementById('ak').value.trim(),
+      model:document.querySelector('#ms-a .mopt.on')?.dataset.m||'claude-sonnet-4-20250514',
+      custom:document.getElementById('ak-model').value.trim()},
+    openai:{key:document.getElementById('ok').value.trim(),
+      model:document.querySelector('#ms-o .mopt.on')?.dataset.m||'gpt-4o',
+      custom:document.getElementById('ok-model').value.trim()},
+    gemini:{key:document.getElementById('gk').value.trim(),
+      model:document.querySelector('#ms-g .mopt.on')?.dataset.m||'gemini-2.0-flash',
+      custom:document.getElementById('gk-model').value.trim()}};
+  cfg.ttsAuto=document.getElementById('t-tts').classList.contains('on');
+  LS.s('cfg',cfg);while(usedW.length>cfg.maxW)usedW.shift();LS.s('used',usedW);
+  toast('Gespeichert ✓','tok');gB();initHome();
+}
+
+function selP(el){
+  document.querySelectorAll('#llm-prov .llm-opt').forEach(o=>o.classList.remove('on'));
+  el.classList.add('on');
+  document.querySelectorAll('.prov-f').forEach(f=>f.style.display='none');
+  const p=el.dataset.p;if(p!=='none')document.getElementById('pf-'+p).style.display='block';
+}
+function selPByName(n){
+  document.querySelectorAll('#llm-prov .llm-opt').forEach(o=>o.classList.toggle('on',o.dataset.p===n));
+  document.querySelectorAll('.prov-f').forEach(f=>f.style.display='none');
+  if(n!=='none'){const el=document.getElementById('pf-'+n);if(el)el.style.display='block';}
+}
+function so(el,gId,dId){
+  document.querySelectorAll('#'+gId+' .sopt').forEach(o=>o.classList.remove('on'));
+  el.classList.add('on');if(dId)uSD(gId,dId);
+}
+function sSt(gId,v){
+  document.querySelectorAll('#'+gId+' .sopt,#'+gId+' .mopt').forEach(o=>{
+    const ov=o.dataset.v||o.dataset.m;
+    o.classList.toggle('on',typeof v==='number'?parseInt(ov)===v:ov===v);
+  });
+}
+function sGet(gId){return document.querySelector('#'+gId+' .sopt.on')?.dataset.v||'1';}
+function uSD(gId,dId){
+  const v=sGet(gId);
+  const m={'sg-d':{1:'A1–A2: Alltagswörter — Apfel, Hund, schlafen…',2:'B1–B2: Mittelstufe — Reise, Gesellschaft, beschleunigen…',3:'C1–C2: Fortgeschritten — Nachhaltigkeit, Ambivalenz…'},
+    'sg-a':{1:'Konkret: Gegenstände und Tiere — greifbar und sichtbar',2:'Gemischt: Objekte, Handlungen und einfache Konzepte',3:'Abstrakt: Gefühle, Ideen, philosophische Konzepte'}};
+  const el=document.getElementById(dId);if(el)el.textContent=m[gId]?.[v]||''
+}
+function setTog(id,v){const el=document.getElementById(id);v?el.classList.add('on'):el.classList.remove('on');}
+function adj(id,d,mn,mx){
+  const el=document.getElementById(id);el.textContent=Math.max(mn,Math.min(mx,parseInt(el.textContent)+d));
+}
+
+// ── UTILS ──
+function genCode(){
+  const w=['WOLF','BERG','WALD','MEER','BURG','DORF','KERN','LICHT','GAST','BAUM','BACH','FELD'];
+  return w[Math.floor(Math.random()*w.length)]+Math.floor(Math.random()*90+10);
+}
+function initHome(){
+  document.getElementById('st-g').textContent=stats.games;
+  document.getElementById('st-w').textContent=usedW.length;
+  document.getElementById('st-q').textContent=stats.questions;
+  const avgR=stats.cntR?Math.round(stats.totalR/stats.cntR*10)/10:0;
+  document.getElementById('st-r').textContent=avgR||'—';
+}
+let toT=null;
+function toast(msg,cls=''){
+  const el=document.getElementById('toast');el.textContent=msg;
+  el.className='toast'+(cls?' '+cls:'');void el.offsetWidth;el.classList.add('show');
+  if(toT)clearTimeout(toT);toT=setTimeout(()=>el.classList.remove('show'),2800);
+}
+// ═══════════════════════════════
+// TTS — Web Speech API
+// ═══════════════════════════════
+let ttsSynth=window.speechSynthesis;
+let ttsCurrentUtt=null;
+let ttsAIText='';
+
+function ttsSpeak(text,lang='de-DE',onEnd=null){
+  if(!ttsSynth)return;
+  ttsSynth.cancel();
+  const utt=new SpeechSynthesisUtterance(text);
+  utt.lang=lang;utt.rate=0.9;utt.pitch=1;
+  // Try to find a German voice
+  const voices=ttsSynth.getVoices();
+  const deVoice=voices.find(v=>v.lang.startsWith('de'));
+  if(deVoice)utt.voice=deVoice;
+  ttsCurrentUtt=utt;
+  if(onEnd)utt.onend=onEnd;
+  ttsSynth.speak(utt);
+}
+
+function ttsQuestion(){
+  const q=G.question?.de;if(!q)return;
+  const btn=document.getElementById('tts-q-btn');
+  if(ttsSynth.speaking){ttsSynth.cancel();btn.classList.remove('speaking');btn.textContent='🔊 Vorlesen';return;}
+  btn.classList.add('speaking');btn.textContent='⏹ Stopp';
+  ttsSpeak(q,'de-DE',()=>{btn.classList.remove('speaking');btn.textContent='🔊 Vorlesen';});
+}
+
+function ttsAI(){
+  if(!ttsAIText)return;
+  const btn=document.getElementById('tts-ai-btn');
+  if(ttsSynth.speaking){ttsSynth.cancel();btn.classList.remove('speaking');btn.textContent='🔊 Vorlesen';return;}
+  btn.classList.add('speaking');btn.textContent='⏹ Stopp';
+  ttsSpeak(ttsAIText,'de-DE',()=>{btn.classList.remove('speaking');btn.textContent='🔊 Vorlesen';});
+}
+
+function stopTTS(){if(ttsSynth)ttsSynth.cancel();}
+
+// ═══════════════════════════════
+// AI EXPERT OPINION
+// ═══════════════════════════════
+let aiMode='kurz'; // 'kurz' | 'lang'
+let aiLoaded=false;
+
+function setAiMode(mode){
+  aiMode=mode;
+  document.getElementById('ai-kurz').classList.toggle('on',mode==='kurz');
+  document.getElementById('ai-lang').classList.toggle('on',mode==='lang');
+  // If already loaded, regenerate with new length
+  if(aiLoaded)requestAIOpinion();
+}
+
+function resetAICard(){
+  aiLoaded=false;ttsAIText='';
+  // Old s-vres card (kept for compatibility)
+  const aiCard=document.getElementById('ai-card');
+  if(aiCard)aiCard.style.display='none';
+  stopTTS();
+}
+
+function resetVAICard(){
+  aiLoaded=false;ttsAIText='';
+  document.getElementById('v-ai-card').style.display='none';
+  document.getElementById('v-ai-loading').style.display='none';
+  document.getElementById('v-ai-content').style.display='none';
+  document.getElementById('v-ai-de').textContent='';
+  document.getElementById('v-ai-uk').textContent='';
+  document.getElementById('v-ai-uk').classList.remove('show');
+  const btn=document.getElementById('v-tts-ai-btn');
+  if(btn){btn.classList.remove('speaking');btn.textContent='🔊 Vorlesen';}
+  stopTTS();
+}
+
+function ttsVAI(){
+  if(!ttsAIText)return;
+  const btn=document.getElementById('v-tts-ai-btn');
+  if(ttsSynth.speaking){ttsSynth.cancel();btn.classList.remove('speaking');btn.textContent='🔊 Vorlesen';return;}
+  btn.classList.add('speaking');btn.textContent='⏹ Stopp';
+  ttsSpeak(ttsAIText,'de-DE',()=>{btn.classList.remove('speaking');btn.textContent='🔊 Vorlesen';});
+}
+
+function toggleVAiTrans(){
+  const el=document.getElementById('v-ai-uk');
+  const show=el.classList.toggle('show');
+  document.getElementById('v-ai-trans-btn').textContent=show?'🇺🇦 Verbergen':'🇺🇦 Übersetzung';
+}
+
+// Called by the answerer — generates and broadcasts to all
+async function requestAndBroadcastAI(){
+  const btn=document.getElementById('btn-ai-op');
+  if(btn){btn.disabled=true;btn.textContent='⏳ Wird geladen…';}
+  document.getElementById('v-answerer-ctrl').style.display='none';
+  showVAILoading();
+
+  const lengthInstr=aiMode==='kurz'
+    ?'Respond in 2-3 sentences maximum. Be concise and direct.'
+    :'Respond in 2-3 paragraphs. Cover multiple perspectives, mention relevant facts or examples, and suggest a nuanced conclusion.';
+
+  const prompt=`You are a German language expert and moderator for a language learning group.
+
+Topic: "${G.topic?.de||''}"
+Question asked: "${G.question?.de||''}"
+
+Give your expert opinion or commentary on this topic in German (B1-B2 level vocabulary, clear and accessible).
+${lengthInstr}
+Take a nuanced, balanced position.
+Then provide a Ukrainian translation of your response.
+
+Respond ONLY with valid JSON (no markdown):
+{"de": "Meiner Meinung nach…", "uk": "На мою думку…"}`;
+
+  try{
+    const txt=await callLLM(prompt);
+    const parsed=JSON.parse(txt.replace(/```json|```/g,'').trim());
+    // Broadcast to all peers
+    const m={type:'AI_OPINION',opinion:parsed};
+    if(G.isHost)hcast(m); else gsend(m);
+    // Show on own screen too
+    showAIOpinionFromPeer(parsed);
+  }catch(e){
+    console.error('AI opinion error:',e);
+    showAIError(e.message);
+    const btn2=document.getElementById('btn-ai-op');
+    if(btn2){btn2.disabled=false;btn2.textContent='🧠 Nochmals versuchen';}
+    document.getElementById('v-answerer-ctrl').style.display='block';
+  }
+}
+
+// Called on all screens when AI opinion arrives via PeerJS
+function showAIOpinionFromPeer(opinion){
+  if(!opinion)return;
+  ttsAIText=opinion.de||'';
+  // Show on v-vote screen
+  document.getElementById('v-ai-card').style.display='block';
+  document.getElementById('v-ai-loading').style.display='none';
+  document.getElementById('v-ai-de').textContent=opinion.de||'';
+  document.getElementById('v-ai-uk').textContent=opinion.uk||'';
+  document.getElementById('v-ai-uk').classList.remove('show');
+  document.getElementById('v-ai-content').style.display='block';
+  // Hide loading states
+  document.getElementById('v-answerer-ctrl').style.display='none';
+  document.getElementById('v-others-wait').style.display='none';
+  aiLoaded=true;
+  if(cfg.ttsAuto&&opinion.de) setTimeout(()=>ttsVAI(),500);
+}
+
+function showVAILoading(){
+  document.getElementById('v-ai-card').style.display='block';
+  document.getElementById('v-ai-loading').style.display='block';
+  document.getElementById('v-ai-content').style.display='none';
+}
+
+function showAILoading(){showVAILoading();}
+
+function showAIError(msg){
+  document.getElementById('v-ai-loading').style.display='none';
+  document.getElementById('v-ai-de').textContent='Fehler: '+msg;
+  document.getElementById('v-ai-content').style.display='block';
+  document.getElementById('v-ai-card').style.display='block';
+}
+
+// Legacy alias
+async function requestAIOpinion(){requestAndBroadcastAI();}
+
+function toggleAiTrans(){
+  const el=document.getElementById('ai-uk');
+  const show=el.classList.toggle('show');
+  document.querySelector('[onclick="toggleAiTrans()"]').textContent=show?'🇺🇦 Verbergen':'🇺🇦 Übersetzung';
+}
+
+document.addEventListener('DOMContentLoaded',()=>{
+  initHome();lsUI();
+  document.addEventListener('click',e=>{
+    const m=e.target.closest('.mopt');if(!m)return;
+    const sel=m.closest('.msel');if(!sel)return;
+    sel.querySelectorAll('.mopt').forEach(o=>o.classList.remove('on'));m.classList.add('on');
+  });
+  document.querySelectorAll('.body').forEach(el=>
+    el.addEventListener('touchmove',e=>e.stopPropagation(),{passive:true}));
+});
+</script>
+</body>
+</html>
