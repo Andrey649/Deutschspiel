@@ -7,6 +7,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <title>DeutschSpiel</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,400&family=Outfit:wght@300;400;500;600&display=swap');
 :root{
@@ -418,8 +419,9 @@ input:focus{border-color:var(--amid)}input::placeholder{color:var(--tdim)}
   <div class="card">
     <div class="ct">Raum-Code — tippen zum Kopieren</div>
     <div class="rcode" id="lob-c" onclick="cpyCode()">—</div>
-    <div style="text-align:center;margin-top:10px;font-size:.78rem;color:var(--tdim);background:var(--adim);border:1px solid var(--amid);border-radius:var(--rs);padding:10px">
-      📱 Andere öffnen diese Seite im Browser und geben den Code ein
+    <div id="lob-qr" style="text-align:center;margin-top:12px;padding:14px;background:#fff;border-radius:var(--rs)"></div>
+    <div style="text-align:center;margin-top:8px;font-size:.74rem;color:var(--tdim)">
+      📱 QR-Code scannen oder Code eingeben
     </div>
   </div>
   <div class="card">
@@ -1021,6 +1023,12 @@ function renderLobby(){
     </div>`).join('');
   checkLobbyBtn();
   hcast({type:'STATE',players:G.players});
+  // QR code
+  try{
+    const url=location.origin+location.pathname+'?room='+G.code;
+    const qr=qrcode(0,'M');qr.addData(url);qr.make();
+    document.getElementById('lob-qr').innerHTML=qr.createSvgTag({cellSize:4,margin:0});
+  }catch(e){}
 }
 
 function renderWait(){
@@ -1774,6 +1782,12 @@ function toggleAiTrans(){
 
 document.addEventListener('DOMContentLoaded',()=>{
   initHome();lsUI();
+  // Auto-fill room code from URL ?room=XXXX
+  const urlRoom=new URLSearchParams(location.search).get('room');
+  if(urlRoom){
+    document.getElementById('h-code').value=urlRoom.toUpperCase();
+    history.replaceState(null,'',location.pathname);
+  }
   document.addEventListener('click',e=>{
     const m=e.target.closest('.mopt');if(!m)return;
     const sel=m.closest('.msel');if(!sel)return;
