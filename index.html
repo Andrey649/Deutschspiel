@@ -404,7 +404,11 @@ input:focus{border-color:var(--amid)}input::placeholder{color:var(--tdim)}
       <input type="text" id="gk-model" placeholder="z.B. gemini-2.5-pro-preview" style="font-size:.82rem">
     </div>
   </div>
-  <button class="btn bp" onclick="saveCfg()">✓ Einstellungen speichern</button>
+  <div id="test-result" style="display:none;margin-bottom:10px;padding:12px;border-radius:var(--rs);font-size:.82rem;line-height:1.5"></div>
+  <div class="btn-row" style="margin-bottom:10px">
+    <button class="btn bd" id="btn-test" onclick="testLLM()">🔌&nbsp; Verbindung testen</button>
+    <button class="btn bp" onclick="saveCfg()">✓&nbsp; Speichern</button>
+  </div>
 </div>
 </div>
 
@@ -1217,7 +1221,10 @@ async function loadTopics(){
   const topics=await genTopics();
   document.getElementById('ts-load').style.display='none';
   if(!topics?.length){
-    document.getElementById('ts-list').innerHTML='<div style="color:var(--red);font-size:.82rem;text-align:center;padding:12px">Fehler beim Laden — bitte eigenes Thema eingeben</div>';
+    const errMsg=window._lastLLMError||'Unbekannter Fehler';
+    document.getElementById('ts-list').innerHTML=`<div style="color:var(--red);font-size:.82rem;text-align:center;padding:12px;line-height:1.6">
+      ❌ Fehler beim Laden<br><span style="font-size:.74rem;opacity:.8">${esc(errMsg)}</span>
+      <br><span style="font-size:.72rem;color:var(--tdim)">Prüfe LLM-Einstellungen (⚙️) oder gib eigenes Thema ein</span></div>`;
     return;
   }
   window._topics=topics;
@@ -1430,7 +1437,8 @@ async function callAnthropic(prompt){
   const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',
     headers:{'Content-Type':'application/json','x-api-key':c.key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
     body:JSON.stringify({model:aModel,max_tokens:600,messages:[{role:'user',content:prompt}]})});
-  const d=await r.json();if(d.error)throw new Error(d.error.message);
+  if(!r.ok){const d=await r.json().catch(()=>({}));throw new Error(`Anthropic ${r.status}: ${d.error?.message||r.statusText}`);}
+  const d=await r.json();if(d.error)throw new Error('Anthropic: '+d.error.message);
   return(d.content?.[0]?.text||'').replace(/\`\`\`json|\`\`\`/g,'').trim();
 }
 async function callOpenAI(prompt){
@@ -1441,15 +1449,18 @@ async function callOpenAI(prompt){
     const r=await fetch('https://api.openai.com/v1/responses',{method:'POST',
       headers:{'Content-Type':'application/json','Authorization':'Bearer '+c.key},
       body:JSON.stringify({model:oModel,instructions:'Respond with valid JSON only.',input:prompt})});
-    const d=await r.json();if(d.error)throw new Error(d.error.message);
+    if(!r.ok){const d=await r.json().catch(()=>({}));throw new Error(`OpenAI ${r.status}: ${d.error?.message||r.statusText}`);}
+    const d=await r.json();if(d.error)throw new Error('OpenAI: '+d.error.message);
     return(d.output_text||d.output?.[0]?.content?.[0]?.text||'').replace(/```json|```/g,'').trim();
   }catch(e){
+    if(e.message.includes('OpenAI'))throw e;
     // Fallback to old Chat Completions API
     const r=await fetch('https://api.openai.com/v1/chat/completions',{method:'POST',
       headers:{'Content-Type':'application/json','Authorization':'Bearer '+c.key},
       body:JSON.stringify({model:oModel,max_tokens:600,
         messages:[{role:'system',content:'Respond with valid JSON only.'},{role:'user',content:prompt}]})});
-    const d=await r.json();if(d.error)throw new Error(d.error.message);
+    if(!r.ok){const d=await r.json().catch(()=>({}));throw new Error(`OpenAI ${r.status}: ${d.error?.message||r.statusText}`);}
+    const d=await r.json();if(d.error)throw new Error('OpenAI: '+d.error.message);
     return(d.choices?.[0]?.message?.content||'').replace(/```json|```/g,'').trim();
   }
 }
@@ -1459,7 +1470,8 @@ async function callGemini(prompt){
   const url=`https://generativelanguage.googleapis.com/v1beta/models/${gModel}:generateContent?key=${c.key}`;
   const r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},
     body:JSON.stringify({contents:[{parts:[{text:prompt}]}],generationConfig:{maxOutputTokens:600}})});
-  const d=await r.json();if(d.error)throw new Error(d.error.message);
+  if(!r.ok){const d=await r.json().catch(()=>({}));throw new Error(`Gemini ${r.status}: ${d.error?.message||r.statusText}`);}
+  const d=await r.json();if(d.error)throw new Error('Gemini: '+d.error.message);
   return(d.candidates?.[0]?.content?.parts?.[0]?.text||'').replace(/\`\`\`json|\`\`\`/g,'').trim();
 }
 
@@ -1487,7 +1499,7 @@ Respond ONLY with a valid JSON array of exactly 4 items (no markdown):
     const parsed=JSON.parse(txt.replace(/```json|```/g,'').trim());
     return Array.isArray(parsed)?parsed.slice(0,4):null;
   }
-  catch(e){toast('LLM-Fehler: '+e.message,'terr');return null;}
+  catch(e){window._lastLLMError=e.message;toast('LLM-Fehler: '+e.message,'terr');return null;}
 }
 
 async function genQuestion(){
@@ -1566,6 +1578,65 @@ function saveCfg(){
   cfg.ttsAuto=document.getElementById('t-tts').classList.contains('on');
   LS.s('cfg',cfg);while(usedW.length>cfg.maxW)usedW.shift();LS.s('used',usedW);
   toast('Gespeichert ✓','tok');gB();initHome();
+}
+
+async function testLLM(){
+  // Save current settings first without navigating back
+  cfg.diff=parseInt(sGet('sg-d'));cfg.abs=parseInt(sGet('sg-a'));
+  cfg.hist=document.getElementById('t-h').classList.contains('on');
+  const p=document.querySelector('#llm-prov .llm-opt.on')?.dataset.p||'none';
+  cfg.llm={provider:p,
+    anthropic:{key:document.getElementById('ak').value.trim(),
+      model:document.querySelector('#ms-a .mopt.on')?.dataset.m||'claude-sonnet-4-20250514',
+      custom:document.getElementById('ak-model').value.trim()},
+    openai:{key:document.getElementById('ok').value.trim(),
+      model:document.querySelector('#ms-o .mopt.on')?.dataset.m||'gpt-5.4',
+      custom:document.getElementById('ok-model').value.trim()},
+    gemini:{key:document.getElementById('gk').value.trim(),
+      model:document.querySelector('#ms-g .mopt.on')?.dataset.m||'gemini-2.0-flash',
+      custom:document.getElementById('gk-model').value.trim()}};
+  LS.s('cfg',cfg);
+
+  const res=document.getElementById('test-result');
+  const btn=document.getElementById('btn-test');
+  btn.disabled=true;btn.innerHTML='<div class="spin"></div>&nbsp; Teste…';
+  res.style.display='block';
+  res.style.background='var(--adim)';res.style.color='var(--tmid)';res.style.border='1px solid var(--amid)';
+  res.textContent='Verbindung wird geprüft…';
+
+  if(p==='none'){
+    res.style.background='rgba(192,80,64,.1)';res.style.color='var(--red)';res.style.border='1px solid rgba(192,80,64,.3)';
+    res.innerHTML='❌ <b>Kein Anbieter ausgewählt</b><br>Wähle Anthropic, OpenAI oder Google oben aus.';
+    btn.disabled=false;btn.innerHTML='🔌&nbsp; Verbindung testen';return;
+  }
+  const key=p==='anthropic'?cfg.llm.anthropic.key:p==='openai'?cfg.llm.openai.key:cfg.llm.gemini.key;
+  if(!key){
+    res.style.background='rgba(192,80,64,.1)';res.style.color='var(--red)';res.style.border='1px solid rgba(192,80,64,.3)';
+    res.innerHTML='❌ <b>API-Key fehlt</b><br>Gib deinen API-Key in das Feld oben ein.';
+    btn.disabled=false;btn.innerHTML='🔌&nbsp; Verbindung testen';return;
+  }
+  const model=p==='anthropic'?(cfg.llm.anthropic.custom||cfg.llm.anthropic.model)
+    :p==='openai'?(cfg.llm.openai.custom||cfg.llm.openai.model)
+    :(cfg.llm.gemini.custom||cfg.llm.gemini.model);
+
+  try{
+    const t0=Date.now();
+    const reply=await callLLM('Respond with exactly this JSON: {"status":"ok"}');
+    const ms=Date.now()-t0;
+    res.style.background='rgba(90,154,106,.1)';res.style.color='var(--grn)';res.style.border='1px solid rgba(90,154,106,.3)';
+    res.innerHTML=`✅ <b>Verbindung erfolgreich!</b><br>Anbieter: ${esc(p)} · Modell: ${esc(model)}<br>Antwortzeit: ${ms}ms`;
+  }catch(e){
+    const msg=e.message||'Unbekannter Fehler';
+    let hint='';
+    if(msg.includes('401')||msg.includes('auth')||msg.includes('invalid'))hint='<br>💡 Prüfe ob der API-Key korrekt und aktiv ist.';
+    else if(msg.includes('404')||msg.includes('not found')||msg.includes('does not exist'))hint='<br>💡 Modell "'+esc(model)+'" existiert möglicherweise nicht. Versuche ein anderes Modell.';
+    else if(msg.includes('429')||msg.includes('rate'))hint='<br>💡 Zu viele Anfragen oder Guthaben aufgebraucht. Prüfe dein Konto.';
+    else if(msg.includes('CORS')||msg.includes('network')||msg.includes('Failed to fetch'))hint='<br>💡 Netzwerkfehler — prüfe deine Internetverbindung.';
+    else if(msg.includes('billing')||msg.includes('quota')||msg.includes('insufficient'))hint='<br>💡 Kein Guthaben auf dem API-Konto. Lade es auf.';
+    res.style.background='rgba(192,80,64,.1)';res.style.color='var(--red)';res.style.border='1px solid rgba(192,80,64,.3)';
+    res.innerHTML=`❌ <b>Verbindung fehlgeschlagen</b><br>Anbieter: ${esc(p)} · Modell: ${esc(model)}<br>Fehler: ${esc(msg)}${hint}`;
+  }
+  btn.disabled=false;btn.innerHTML='🔌&nbsp; Verbindung testen';
 }
 
 function selP(el){
