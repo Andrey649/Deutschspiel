@@ -709,7 +709,6 @@ input:focus{border-color:var(--amid)}input::placeholder{color:var(--tdim)}
   <div class="qcard" style="text-align:left">
     <div style="font-size:.62rem;color:var(--blu);letter-spacing:.15em;text-transform:uppercase;margin-bottom:8px">Gewählte Position</div>
     <div style="font-size:.92rem;line-height:1.5;color:var(--txt)" id="dc-pos-de"></div>
-    <div style="font-size:.78rem;color:var(--tdim);margin-top:8px;font-style:italic;line-height:1.4" id="dc-pos-uk"></div>
   </div>
   <div id="dc-my-turn" style="display:none;margin-top:12px">
     <button class="btn bg" style="padding:18px;font-size:1rem" onclick="speakerDone()">
@@ -908,8 +907,8 @@ function onGuest(c,m){
 function onHost(m){
   switch(m.type){
     case 'STATE':G.players=m.players;renderWait();break;
-    case 'START_WORT':G.players=m.players;G.di=m.di;G.round=m.round;setMode('wort');beginWortRound();break;
-    case 'START_GESPRACH':G.players=m.players;G.themengeberIdx=m.themengeberIdx||0;G.gRound=m.gRound||1;G.sesTopic=[];setMode('gesprach');showGebeOrWait();break;
+    case 'START_WORT':G.players=m.players;G.di=m.di;G.round=m.round;if(m.cfg){cfg.diff=m.cfg.diff;cfg.abs=m.cfg.abs;cfg.timer=m.cfg.timer;cfg.rounds=m.cfg.rounds;}setMode('wort');beginWortRound();break;
+    case 'START_GESPRACH':G.players=m.players;G.themengeberIdx=m.themengeberIdx||0;G.gRound=m.gRound||1;G.sesTopic=[];if(m.cfg)cfg.diff=m.cfg.diff;setMode('gesprach');showGebeOrWait();break;
     case 'WORD':G.word=m.word;showWordUI();break;
     case 'GUESSED':handleGuessed(m.id);if(G.amD()){rGuessers();document.getElementById('btn-dn').disabled=false;}rGBoard();break;
     case 'WORT_RESULT':G.word=m.word;G.players=m.players;if(cfg.hist&&m.word)addUsed(m.word);showWortResult(m);break;
@@ -1041,12 +1040,12 @@ function startGame(){
   G.players.forEach(p=>{p.score=0;p.totalR=0;p.cntR=0;});
   if(G.mode==='wort'){
     G.round=1;G.di=0;G.sesWords=[];G.guessed=[];
-    hcast({type:'START_WORT',players:G.players,di:0,round:1});
+    hcast({type:'START_WORT',players:G.players,di:0,round:1,cfg:{diff:cfg.diff,abs:cfg.abs,timer:cfg.timer,rounds:cfg.rounds}});
     beginWortRound();
   } else {
     if(cfg.llm.provider==='none'){toast('Bitte zuerst LLM konfigurieren','terr');return;}
     G.themengeberIdx=0;G.gRound=1;G.sesTopic=[];G.selections={};G.positionCards=[];G.mySelection=null;
-    hcast({type:'START_GESPRACH',players:G.players,themengeberIdx:0,gRound:1});
+    hcast({type:'START_GESPRACH',players:G.players,themengeberIdx:0,gRound:1,cfg:{diff:cfg.diff}});
     showGebeOrWait();
   }
 }
@@ -1225,7 +1224,6 @@ async function loadTopics(){
   document.getElementById('ts-list').innerHTML=topics.map((t,i)=>`
     <div class="topic-card" id="tc-${i}" onclick="selectTopic(${i},this)">
       <div class="topic-de">${esc(t.de)}</div>
-      <div class="topic-uk" style="font-size:.76rem;color:var(--tdim);margin-top:4px;line-height:1.4">${esc(t.uk)}</div>
     </div>`).join('');
   document.getElementById('btn-regen').style.display='block';
 }
@@ -1317,7 +1315,6 @@ function renderPositionCards(){
         <div style="width:22px;height:22px;border-radius:50%;background:var(--bdim);border:1px solid var(--bmid);display:flex;align-items:center;justify-content:center;font-size:.7rem;color:var(--blu);font-weight:700;flex-shrink:0;margin-top:2px">${i+1}</div>
         <div style="flex:1">
           <div style="font-size:.88rem;line-height:1.5;color:var(--txt)">${esc(c.de)}</div>
-          <div style="font-size:.76rem;color:var(--tdim);margin-top:5px;line-height:1.4;font-style:italic">${esc(c.uk)}</div>
         </div>
       </div>
     </div>`).join('');
@@ -1475,16 +1472,9 @@ function startDiscussion(){
   const speakerId=G.discussOrder[0];
   const sel=G.selections[speakerId];
   const m={type:'ACTIVE_SPEAKER',id:speakerId,order:1,total:G.discussOrder.length,
-    posText:sel?.text||'',posUk:getUkForSelection(sel),topic:G.topic?.de||''};
+    posText:sel?.text||'',topic:G.topic?.de||''};
   hcast(m);
   showDiscussionScreen(m);
-}
-
-function getUkForSelection(sel){
-  if(!sel)return'';
-  if(sel.cardIdx===-1)return'';
-  const card=G.positionCards[sel.cardIdx];
-  return card?.uk||'';
 }
 
 function showDiscussionScreen(m){
@@ -1497,7 +1487,6 @@ function showDiscussionScreen(m){
   document.getElementById('dc-tot').textContent=m.total||G.players.length;
   document.getElementById('dc-pg').style.width=((m.order||1)/(m.total||G.players.length)*100)+'%';
   document.getElementById('dc-pos-de').textContent=m.posText||'';
-  document.getElementById('dc-pos-uk').textContent=m.posUk||'';
   // Store current speaker info
   G._currentSpeakerId=m.id;
   G.activeDiscIdx=(m.order||1)-1;
@@ -1523,7 +1512,7 @@ function handleSpeakerDone(){
     const speakerId=G.discussOrder[G.activeDiscIdx];
     const sel=G.selections[speakerId];
     const m={type:'NEXT_SPEAKER',id:speakerId,order:G.activeDiscIdx+1,total:G.discussOrder.length,
-      posText:sel?.text||'',posUk:getUkForSelection(sel),topic:G.topic?.de||''};
+      posText:sel?.text||'',topic:G.topic?.de||''};
     hcast(m);
     showDiscussionScreen(m);
   }
@@ -1695,10 +1684,10 @@ Each topic should be phrased as a question or provocative statement.
 
 Respond ONLY with a valid JSON array of exactly 4 items (no markdown):
 [
-  {"de": "Soll man Kindern Smartphones erst ab 14 Jahren erlauben?", "uk": "Чи варто дозволяти дітям смартфони лише з 14 років?"},
-  {"de": "...", "uk": "..."},
-  {"de": "...", "uk": "..."},
-  {"de": "...", "uk": "..."}
+  {"de": "Soll man Kindern Smartphones erst ab 14 Jahren erlauben?"},
+  {"de": "..."},
+  {"de": "..."},
+  {"de": "..."}
 ]`;
   try{
     const txt=await callLLM(p);
@@ -1718,15 +1707,13 @@ The 5 cards must differ significantly from each other — cover the full spectru
 Do NOT use fake quotes, fake statistics, or attribute opinions to specific people.
 Each card should be a genuine, thoughtful perspective someone might have.
 
-Also provide a Ukrainian translation for each card.
-
 Respond ONLY with a valid JSON array of exactly 5 objects (no markdown):
 [
-  {"de": "Ich denke, dass... Meine Erfahrung zeigt... Deshalb bin ich der Meinung...", "uk": "Я думаю, що... Мій досвід показує... Тому я вважаю..."},
-  {"de": "...", "uk": "..."},
-  {"de": "...", "uk": "..."},
-  {"de": "...", "uk": "..."},
-  {"de": "...", "uk": "..."}
+  {"de": "Ich denke, dass... Meine Erfahrung zeigt... Deshalb bin ich der Meinung..."},
+  {"de": "..."},
+  {"de": "..."},
+  {"de": "..."},
+  {"de": "..."}
 ]`;
   try{
     const txt=await callLLM(p);
