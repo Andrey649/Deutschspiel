@@ -448,7 +448,7 @@ input:focus{border-color:var(--amid)}input::placeholder{color:var(--tdim)}
       <div class="mode-card" id="mc-g" onclick="selMode('gesprach')">
         <div class="mode-ico">🎙️</div>
         <div class="mode-nm">Gesprächsrunde</div>
-        <div class="mode-ds">KI-Themen · Fragen · Bewertung</div>
+        <div class="mode-ds">KI-Themen · Positionen · Diskussion</div>
       </div>
     </div>
     <div id="lob-mode-warn" style="text-align:center;font-size:.74rem;color:var(--red);display:none;margin-top:4px">
@@ -549,12 +549,16 @@ input:focus{border-color:var(--amid)}input::placeholder{color:var(--tdim)}
 </div>
 </div>
 
-<!-- GESPRÄCHSRUNDE: TOPIC SELECTION -->
+<!-- GESPRÄCHSRUNDE: TOPIC SELECTION (Themengeber) -->
 <div class="scr" id="s-topics">
 <div class="topbar">
   <div></div><span class="tb" style="color:var(--blu)">Thema wählen</span><div></div>
 </div>
 <div class="body">
+  <div class="card" style="text-align:center;border-color:var(--bmid);background:var(--bdim);padding:14px">
+    <div style="font-size:.62rem;color:var(--blu);letter-spacing:.15em;text-transform:uppercase;margin-bottom:4px">Runde <span id="ts-rnum">1</span></div>
+    <div style="font-size:1rem;font-weight:600;color:var(--blu)">Du bist Themengeber</div>
+  </div>
   <div id="ts-load" style="text-align:center;padding:28px 0">
     <div class="spin" style="border-top-color:var(--blu)"></div>
     <div style="margin-top:10px;font-size:.8rem;color:var(--tdim)">KI generiert Themen…</div>
@@ -586,190 +590,159 @@ input:focus{border-color:var(--amid)}input::placeholder{color:var(--tdim)}
 </div>
 </div>
 
-<!-- GESPRÄCHSRUNDE: TOPIC WAIT (GUESTS) -->
+<!-- GESPRÄCHSRUNDE: TOPIC WAIT (non-Themengeber) -->
 <div class="scr" id="s-twait">
-<div class="topbar"><div></div><span class="tb" style="color:var(--blu)">Host wählt Thema</span><div></div></div>
+<div class="topbar"><div></div><span class="tb" style="color:var(--blu)">Thema wird gewählt</span><div></div></div>
 <div class="body">
-  <div style="text-align:center;padding:48px 0 24px">
+  <div style="text-align:center;padding:32px 0 16px">
     <div class="dots"><span>•</span><span>•</span><span>•</span></div>
     <div style="margin-top:14px;font-size:.85rem;color:var(--tdim)">Warte auf Themenauswahl…</div>
+  </div>
+  <div class="card" style="text-align:center;border-color:var(--bmid);background:var(--bdim);padding:14px">
+    <div style="font-size:.62rem;color:var(--tdim);letter-spacing:.12em;text-transform:uppercase;margin-bottom:4px">Themengeber</div>
+    <div style="font-size:1.1rem;font-weight:700;color:var(--blu)" id="tw-geber">—</div>
   </div>
   <div class="card"><div class="ct">Mitspieler</div><div id="tw-pl"></div></div>
 </div>
 </div>
 
-<!-- GESPRÄCHSRUNDE: QUESTION -->
-<div class="scr" id="s-question">
+<!-- GESPRÄCHSRUNDE: POSITION CARDS -->
+<div class="scr" id="s-positions">
 <div class="topbar">
-  <div style="font-size:.78rem;color:var(--tdim)">Frage <span id="q-num">1</span></div>
-  <span class="tb" style="color:var(--blu)">Gesprächsrunde</span>
-  <div class="tring" id="q-tm" style="border-color:var(--bmid);color:var(--blu)"></div>
+  <div></div><span class="tb" style="color:var(--blu)">Positionskarten</span><div></div>
 </div>
 <div class="body">
-  <div class="pgbar"><div class="pgfill" id="q-pg" style="width:0%;background:var(--blu)"></div></div>
   <div style="text-align:center;margin-bottom:10px">
     <div style="font-size:.62rem;color:var(--tdim);letter-spacing:.12em;text-transform:uppercase;margin-bottom:3px">Thema</div>
-    <div style="font-size:.92rem;font-weight:600;color:var(--blu)" id="q-topic"></div>
+    <div style="font-size:.92rem;font-weight:600;color:var(--blu)" id="pos-topic"></div>
   </div>
-  <div class="abadge" style="--adim:var(--bdim);--amid:var(--bmid);--accent:var(--blu)">
-    <div class="albl">Antwortet</div>
-    <div class="aname" style="color:var(--blu)" id="q-ans">—</div>
+  <div style="font-size:.78rem;color:var(--tdim);text-align:center;margin-bottom:12px">
+    Wähle genau eine Position, die deiner Meinung am nächsten ist:
   </div>
-  <div class="qcard">
-    <div id="q-ld" style="padding:16px;text-align:center"><div class="spin" style="border-top-color:var(--blu)"></div>
-      <div style="margin-top:8px;font-size:.78rem;color:var(--tdim)">Frage wird generiert…</div></div>
-    <div id="q-cnt" style="display:none">
-      <div style="font-size:.62rem;color:var(--blu);letter-spacing:.15em;text-transform:uppercase;margin-bottom:8px" id="q-n2"></div>
-      <div class="qde" id="q-de"></div>
-      <div class="quk" id="q-uk"></div>
-      <div style="text-align:center">
-        <div class="transbtn" id="btn-qtrans" onclick="toggleQTrans()">🇺🇦 Übersetzung anzeigen</div>
-      </div>
+  <div id="pos-load" style="text-align:center;padding:20px 0">
+    <div class="spin" style="border-top-color:var(--blu)"></div>
+    <div style="margin-top:8px;font-size:.78rem;color:var(--tdim)">Positionen werden generiert…</div>
+  </div>
+  <div id="pos-list"></div>
+
+  <!-- Custom position -->
+  <div class="card" id="pos-custom-card" style="display:none;border-style:dashed;border-color:var(--bmid);cursor:pointer"
+    onclick="selectPosCustom()">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+      <div style="width:24px;height:24px;border-radius:50%;background:var(--bdim);border:1px solid var(--bmid);display:flex;align-items:center;justify-content:center;font-size:.7rem;color:var(--blu);font-weight:700;flex-shrink:0">✎</div>
+      <div style="font-size:.82rem;font-weight:600;color:var(--blu)">Meine Position</div>
     </div>
+    <textarea id="pos-custom-text" placeholder="Deine eigene Meinung auf Deutsch eingeben…"
+      style="width:100%;min-height:70px;background:var(--sur2);border:1px solid var(--brd);border-radius:var(--rs);padding:10px;font-family:'Outfit',sans-serif;font-size:.85rem;color:var(--txt);resize:vertical;outline:none"
+      onclick="event.stopPropagation()" oninput="onPosCustomInput()"></textarea>
   </div>
-  <div id="q-actrl" style="display:none">
-    <button class="btn bg" style="padding:18px;font-size:1rem" onclick="doneAnswering()">
-      ✅&nbsp; Fertig — ich habe geantwortet
-    </button>
-  </div>
-  <div id="q-owait" style="display:none;text-align:center;padding:14px;font-size:.8rem;color:var(--tdim)">
-    Zuhören und die Antwort vorbereiten…
+
+  <button class="btn bp" id="btn-pos-confirm" onclick="confirmPosition()" disabled style="--accent:var(--blu);margin-top:8px">
+    ✓&nbsp; Position bestätigen
+  </button>
+  <div id="pos-done-msg" style="display:none;text-align:center;padding:20px 0">
+    <div style="font-size:2rem">✅</div>
+    <div style="font-size:.88rem;color:var(--grn);margin-top:6px;font-weight:600">Position gewählt!</div>
+    <div style="font-size:.76rem;color:var(--tdim);margin-top:4px">Warte auf andere Spieler…</div>
   </div>
 </div>
 </div>
 
-<!-- GESPRÄCHSRUNDE: AFTER ANSWER (no voting) -->
-<div class="scr" id="s-vote">
+<!-- GESPRÄCHSRUNDE: POSITION WAIT (Host sees checklist) -->
+<div class="scr" id="s-pwait">
+<div class="topbar"><div></div><span class="tb" style="color:var(--blu)">Positionen wählen</span><div></div></div>
+<div class="body">
+  <div style="text-align:center;margin-bottom:12px">
+    <div style="font-size:.62rem;color:var(--tdim);letter-spacing:.12em;text-transform:uppercase;margin-bottom:3px">Thema</div>
+    <div style="font-size:.92rem;font-weight:600;color:var(--blu)" id="pw-topic"></div>
+  </div>
+  <div class="card">
+    <div class="ct" style="color:var(--blu)">Wer hat gewählt?</div>
+    <div id="pw-list"></div>
+  </div>
+  <button class="btn bp" id="btn-pw-next" onclick="revealAllPositions()" disabled style="--accent:var(--blu)">
+    ▶&nbsp; Weiter — alle Positionen aufdecken
+  </button>
+  <div id="pw-gwait" style="display:none;text-align:center;padding:14px;font-size:.82rem;color:var(--tdim)">
+    <div class="dots"><span>•</span><span>•</span><span>•</span></div>Warte auf alle Spieler…
+  </div>
+</div>
+</div>
+
+<!-- GESPRÄCHSRUNDE: REVEAL -->
+<div class="scr" id="s-reveal">
+<div class="topbar"><div></div><span class="tb" style="color:var(--blu)">Alle Positionen</span><div></div></div>
+<div class="body">
+  <div style="text-align:center;margin-bottom:12px">
+    <div style="font-size:.62rem;color:var(--tdim);letter-spacing:.12em;text-transform:uppercase;margin-bottom:3px">Thema</div>
+    <div style="font-size:.92rem;font-weight:600;color:var(--blu)" id="rv-topic"></div>
+  </div>
+  <div id="rv-list"></div>
+  <div id="rv-ctrl" style="display:none;margin-top:12px">
+    <button class="btn bp" onclick="startDiscussion()" style="--accent:var(--blu)">
+      🎙️&nbsp; Diskussion starten
+    </button>
+  </div>
+  <div id="rv-gwait" style="display:none;text-align:center;padding:14px;font-size:.82rem;color:var(--tdim)">
+    <div class="dots"><span>•</span><span>•</span><span>•</span></div>Host startet Diskussion…
+  </div>
+</div>
+</div>
+
+<!-- GESPRÄCHSRUNDE: DISCUSSION -->
+<div class="scr" id="s-discuss">
 <div class="topbar">
-  <div></div><span class="tb" style="color:var(--blu)">Nach der Antwort</span><div></div>
+  <div style="font-size:.78rem;color:var(--tdim)"><span id="dc-cur">1</span>/<span id="dc-tot">4</span></div>
+  <span class="tb" style="color:var(--blu)">Diskussion</span>
+  <div></div>
 </div>
 <div class="body">
-  <div class="card" style="text-align:center;padding:20px">
-    <div style="font-size:.65rem;color:var(--tdim);letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px">Hat geantwortet</div>
-    <div style="font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:700;color:var(--blu)" id="v-nm">—</div>
-    <div style="font-size:.82rem;color:var(--tmid);margin-top:6px;font-style:italic;line-height:1.4" id="v-q">—</div>
+  <div style="text-align:center;margin-bottom:10px">
+    <div style="font-size:.62rem;color:var(--tdim);letter-spacing:.12em;text-transform:uppercase;margin-bottom:3px">Thema</div>
+    <div style="font-size:.88rem;font-weight:600;color:var(--blu)" id="dc-topic"></div>
   </div>
-
-  <!-- Answerer sees KI button -->
-  <div id="v-answerer-ctrl" style="display:none">
-    <div style="text-align:center;padding:12px 0;font-size:.8rem;color:var(--tdim)">
-      Diskutiert das Thema mit der Gruppe!
-    </div>
-    <button class="btn bgh" onclick="requestAndBroadcastAI()"
-      style="border-color:var(--bmid);color:var(--blu)">
-      🧠&nbsp; KI-Expertenmeinung abrufen
+  <div class="pgbar"><div class="pgfill" id="dc-pg" style="width:0%;background:var(--blu)"></div></div>
+  <div class="abadge" style="--adim:var(--bdim);--amid:var(--bmid);--accent:var(--blu)">
+    <div class="albl">Erklärt gerade</div>
+    <div class="aname" style="color:var(--blu)" id="dc-speaker">—</div>
+  </div>
+  <div class="qcard" style="text-align:left">
+    <div style="font-size:.62rem;color:var(--blu);letter-spacing:.15em;text-transform:uppercase;margin-bottom:8px">Gewählte Position</div>
+    <div style="font-size:.92rem;line-height:1.5;color:var(--txt)" id="dc-pos-de"></div>
+    <div style="font-size:.78rem;color:var(--tdim);margin-top:8px;font-style:italic;line-height:1.4" id="dc-pos-uk"></div>
+  </div>
+  <div id="dc-my-turn" style="display:none;margin-top:12px">
+    <button class="btn bg" style="padding:18px;font-size:1rem" onclick="speakerDone()">
+      ✅&nbsp; Fertig — ich habe erklärt
     </button>
-    <div style="text-align:center;margin-top:5px;font-size:.68rem;color:var(--tdim)">
-      Alle sehen dann die KI-Meinung gleichzeitig
-    </div>
   </div>
-
-  <!-- Others wait -->
-  <div id="v-others-wait" style="display:none;text-align:center;padding:20px 0">
-    <div class="dots"><span>•</span><span>•</span><span>•</span></div>
-    <div style="margin-top:12px;font-size:.84rem;color:var(--tdim)">Diskussion läuft…</div>
-  </div>
-
-  <!-- AI opinion card (appears for everyone when loaded) -->
-  <div class="ai-card fi" id="v-ai-card" style="display:none;margin-top:12px">
-    <div class="ai-header">
-      <div class="ai-title">🧠 KI-Expertenmeinung</div>
-      <div class="ai-mode-btns">
-        <div class="ai-mode-btn on" id="v-ai-kurz" onclick="setAiMode('kurz')">Kurz</div>
-        <div class="ai-mode-btn" id="v-ai-lang" onclick="setAiMode('lang')">Ausführlich</div>
-      </div>
-    </div>
-    <div id="v-ai-loading" class="ai-loading" style="display:none">
-      <div class="spin" style="border-top-color:var(--blu)"></div>
-      <div style="margin-top:8px;font-size:.76rem;color:var(--tdim)">KI denkt nach…</div>
-    </div>
-    <div id="v-ai-content" style="display:none">
-      <div class="ai-text" id="v-ai-de"></div>
-      <div class="ai-text-uk" id="v-ai-uk"></div>
-      <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
-        <div class="tts-btn" id="v-tts-ai-btn" onclick="ttsVAI()">🔊 Vorlesen</div>
-        <div class="transbtn" id="v-ai-trans-btn" onclick="toggleVAiTrans()">🇺🇦 Übersetzung</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Host navigation controls -->
-  <div id="v-host-ctrl" style="display:none;margin-top:12px">
-    <div class="btn-row">
-      <button class="btn bd" onclick="endTopic()">🏁&nbsp; Thema beenden</button>
-      <button class="btn bp" onclick="nextQuestion()" style="--accent:var(--blu)">▶&nbsp; Nächste Frage</button>
-    </div>
-  </div>
-  <div id="v-guest-wait" style="display:none;text-align:center;padding:12px;font-size:.8rem;color:var(--tdim)">
-    <div style="margin-top:4px">Warte auf Host…</div>
+  <div id="dc-wait" style="display:none;text-align:center;padding:14px;font-size:.8rem;color:var(--tdim)">
+    Zuhören…
   </div>
 </div>
 </div>
 
-<!-- GESPRÄCHSRUNDE: VOTE RESULT -->
-<div class="scr" id="s-vres">
-<div class="topbar"><div></div><span class="tb" style="color:var(--blu)">Bewertungsergebnis</span><div></div></div>
+<!-- GESPRÄCHSRUNDE: ROUND END -->
+<div class="scr" id="s-ground">
+<div class="topbar"><div></div><span class="tb" style="color:var(--blu)">Runde beendet</span><div></div></div>
 <div class="body">
-  <div class="score-reveal fi" style="--adim:var(--bdim);--amid:var(--bmid);--accent:var(--blu)">
-    <div style="font-size:.65rem;color:var(--tdim);letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px">Durchschnittliche Bewertung</div>
-    <div class="score-num" style="color:var(--blu)" id="vr-avg">—</div>
-    <div style="font-size:1.4rem;margin-top:5px;letter-spacing:3px" id="vr-stars"></div>
-    <div style="font-size:.74rem;color:var(--tdim);margin-top:6px" id="vr-cnt"></div>
+  <div style="text-align:center;padding:20px 0">
+    <div style="font-size:2.5rem">🎙️</div>
+    <div style="font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:700;color:var(--blu);margin-top:8px">Runde abgeschlossen!</div>
   </div>
-  <div class="card fi" style="margin-top:12px">
-    <div class="ct" style="color:var(--blu)">Sitzungs-Rangliste</div>
-    <div id="vr-bd"></div>
+  <div class="card">
+    <div class="ct" style="color:var(--blu)">Thema</div>
+    <div style="font-size:.95rem;color:var(--txt);line-height:1.4" id="gr-topic"></div>
   </div>
-  <!-- AI EXPERT OPINION -->
-  <div class="ai-card fi" id="ai-card" style="display:none">
-    <div class="ai-header">
-      <div class="ai-title">🧠 KI-Experte Meinung</div>
-      <div class="ai-mode-btns">
-        <div class="ai-mode-btn on" id="ai-kurz" onclick="setAiMode('kurz')">Kurz</div>
-        <div class="ai-mode-btn" id="ai-lang" onclick="setAiMode('lang')">Ausführlich</div>
-      </div>
-    </div>
-    <div id="ai-loading" class="ai-loading" style="display:none">
-      <div class="spin" style="border-top-color:var(--blu)"></div>
-      <div style="margin-top:8px;font-size:.76rem;color:var(--tdim)">KI denkt nach…</div>
-    </div>
-    <div id="ai-content" style="display:none">
-      <div class="ai-text" id="ai-de"></div>
-      <div class="ai-text-uk" id="ai-uk"></div>
-      <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
-        <div class="tts-btn" id="tts-ai-btn" onclick="ttsAI()">🔊 Vorlesen</div>
-        <div class="transbtn" onclick="toggleAiTrans()">🇺🇦 Übersetzung</div>
-      </div>
-    </div>
-    <div id="ai-none" style="font-size:.78rem;color:var(--tdim);text-align:center;padding:8px">
-      Kein LLM konfiguriert
-    </div>
+  <div class="card">
+    <div class="ct" style="color:var(--blu)">Bisherige Themen</div>
+    <div id="gr-hist" style="line-height:2"></div>
   </div>
-
-  <!-- AI button — only shown to the one who answered -->
-  <div id="ai-req-answerer" style="margin-top:10px;display:none">
-    <button class="btn bgh" id="btn-ai-op" onclick="requestAndBroadcastAI()"
-      style="border-color:var(--bmid);color:var(--blu);font-size:.9rem">
-      🧠&nbsp; KI-Expertenmeinung abrufen
-    </button>
-    <div style="text-align:center;margin-top:5px;font-size:.7rem;color:var(--tdim)">
-      Nur du kannst das abrufen — alle sehen dann das Ergebnis
-    </div>
+  <div id="gr-hctrl" style="display:none;gap:10px;margin-top:8px">
+    <button class="btn bp" onclick="gNextRound()" style="--accent:var(--blu)">🔄&nbsp; Nächste Runde</button>
+    <button class="btn br" onclick="gEndGame()">🏁&nbsp; Spiel beenden</button>
   </div>
-  <!-- Others see this while waiting -->
-  <div id="ai-req-waiting" style="margin-top:10px;display:none;text-align:center;
-    padding:10px;font-size:.78rem;color:var(--tdim);background:var(--bdim);
-    border-radius:var(--rs);border:1px solid var(--bmid)">
-    ⏳ Warte auf KI-Meinung…
-  </div>
-
-  <div id="vr-hctrl" style="display:none;margin-top:8px">
-    <div class="btn-row">
-      <button class="btn bd" onclick="endTopic()">🏁&nbsp; Thema beenden</button>
-      <button class="btn bp" onclick="nextQuestion()" style="--accent:var(--blu)">▶&nbsp; Nächste Frage</button>
-    </div>
-  </div>
-  <div id="vr-gwt" style="display:none;text-align:center;padding:14px;font-size:.82rem;color:var(--tdim)">
+  <div id="gr-gwait" style="display:none;text-align:center;padding:14px;font-size:.82rem;color:var(--tdim)">
     <div class="dots"><span>•</span><span>•</span><span>•</span></div>Host entscheidet…
   </div>
 </div>
@@ -825,13 +798,17 @@ let G={
   // Wortspiel
   di:0,round:0,word:null,guessed:[],sesWords:[],
   // Gesprächsrunde
-  topic:null,question:null,qNum:0,answererIdx:0,votes:{},myVote:0,sesTopic:[],
+  topic:null,sesTopic:[],
+  themengeberIdx:0,gRound:0,
+  positionCards:[],selections:{},mySelection:null,
+  activeDiscIdx:0,discussOrder:[],
   // shared
   tiInt:null,tiLeft:0,
   peer:null,conn:null,peers:{}
 };
 G.amD=()=>G.players[G.di]?.id===G.myId;
-G.amA=()=>G.players[G.answererIdx]?.id===G.myId;
+G.amThemengeber=()=>G.players[G.themengeberIdx]?.id===G.myId;
+G.amSpeaker=()=>G.discussOrder[G.activeDiscIdx]===G.myId;
 
 // ── SCREENS ──
 let hist=['s-home'];
@@ -884,7 +861,7 @@ function hListen(){
         }
         toast((disc?.name||'Spieler')+' hat das Spiel verlassen','terr');
         if(G.mode==='wort'&&G.di>=G.players.length)G.di=G.di%G.players.length;
-        if(G.mode==='gesprach'&&G.answererIdx>=G.players.length)G.answererIdx=G.answererIdx%G.players.length;
+        if(G.mode==='gesprach'&&G.themengeberIdx>=G.players.length)G.themengeberIdx=G.themengeberIdx%G.players.length;
         renderLobby();
       });
     });
@@ -916,16 +893,15 @@ function onGuest(c,m){
     // Guest describer got an AI-generated word — store and relay
     G.word=m.word;
     hcast({type:'WORD',word:m.word},c.peer);
-  } else if(m.type==='ANSWER_DONE'){
-    // Guest answerer finished — host relays to all others + shows on own screen
-    G.question=m.q;G.answererIdx=m.ai;
-    hcast({type:'ANSWER_DONE',q:m.q,ai:m.ai},c.peer);
-    showAfterAnswer();
-  } else if(m.type==='AI_OPINION'){
-    // Guest answerer generated opinion — host broadcasts to everyone
-    const op=m.opinion;
-    hcast({type:'AI_OPINION',opinion:op},c.peer);
-    showAIOpinionFromPeer(op);
+  } else if(m.type==='TOPIC_CHOSEN_BY_GEBER'){
+    // Themengeber (guest) chose topic — host processes
+    handleGeberTopicChosen(m.topic);
+  } else if(m.type==='POS_SELECTED'){
+    // Guest selected a position — host tracks
+    handlePosSelected(m.id,m.cardIdx,m.text);
+  } else if(m.type==='SPEAKER_DONE'){
+    // Active speaker (guest) finished — host advances
+    handleSpeakerDone();
   }
 }
 
@@ -933,19 +909,20 @@ function onHost(m){
   switch(m.type){
     case 'STATE':G.players=m.players;renderWait();break;
     case 'START_WORT':G.players=m.players;G.di=m.di;G.round=m.round;setMode('wort');beginWortRound();break;
-    case 'START_GESPRACH':G.players=m.players;setMode('gesprach');goTo('s-twait');renderTWait();break;
+    case 'START_GESPRACH':G.players=m.players;G.themengeberIdx=m.themengeberIdx||0;G.gRound=m.gRound||1;G.sesTopic=[];setMode('gesprach');showGebeOrWait();break;
     case 'WORD':G.word=m.word;showWordUI();break;
     case 'GUESSED':handleGuessed(m.id);if(G.amD()){rGuessers();document.getElementById('btn-dn').disabled=false;}rGBoard();break;
     case 'WORT_RESULT':G.word=m.word;G.players=m.players;if(cfg.hist&&m.word)addUsed(m.word);showWortResult(m);break;
     case 'NEXT_WORT':G.di=m.di;G.round=m.round;G.players=m.players;beginWortRound();break;
-    case 'TOPIC_CHOSEN':G.topic=m.topic;G.answererIdx=0;G.qNum=0;showTopicToAll(m.topic);break;
-    case 'QUESTION':G.question=m.q;G.qNum=m.qNum;G.answererIdx=m.ai;showQuestion();break;
-    case 'START_VOTE':G.question=m.q;showAfterAnswer();break;
-    case 'ANSWER_DONE':G.question=m.q;G.answererIdx=m.ai;showAfterAnswer();break;
-    case 'VOTE_RESULT':G.players=m.players;showVoteResult(m);break;
-    case 'NEXT_Q':G.answererIdx=m.ai;G.qNum=m.qNum;goTo('s-question');genAndShowQ();break;
+    case 'TOPIC_CHOSEN':G.topic=m.topic;showPositionCardsScreen(m.topic);break;
+    case 'POSITION_CARDS':G.positionCards=m.cards;G.topic=m.topic;renderPositionCards();break;
+    case 'POS_PROGRESS':break; // guests can ignore progress count
+    case 'ALL_REVEAL':G.selections=m.selections;G.topic=m.topic;showReveal();break;
+    case 'ACTIVE_SPEAKER':showDiscussionScreen(m);break;
+    case 'NEXT_SPEAKER':showDiscussionScreen(m);break;
+    case 'G_ROUND_OVER':showGRoundOver();break;
+    case 'G_NEXT_ROUND':G.themengeberIdx=m.themengeberIdx;G.gRound=m.gRound;showGebeOrWait();break;
     case 'GAME_OVER':G.players=m.players;G.mode=m.mode||'wort';showOver();break;
-    case 'AI_OPINION':showAIOpinionFromPeer(m.opinion);break;
   }
 }
 
@@ -1045,11 +1022,14 @@ function renderWait(){
 }
 
 function renderTWait(){
-  document.getElementById('tw-pl').innerHTML=G.players.map(p=>`
-    <div class="pi ${p.id===G.myId?'me':''}">
+  document.getElementById('tw-pl').innerHTML=G.players.map(p=>{
+    const isGeber=G.players[G.themengeberIdx]?.id===p.id;
+    return `<div class="pi ${p.id===G.myId?'me':''}">
       <div class="pl"><div class="av">${esc(p.name[0].toUpperCase())}</div>
-        <span class="pn">${esc(p.name)}</span></div>
-    </div>`).join('');
+        <span class="pn">${esc(p.name)}${p.id===G.myId?' (du)':''}</span></div>
+      ${isGeber?'<span class="tag ta" style="--accent:var(--blu);--adim:var(--bdim);--amid:var(--bmid)">Themengeber</span>':''}
+    </div>`;
+  }).join('');
 }
 
 function cpyCode(){navigator.clipboard?.writeText(G.code).then(()=>toast('Code kopiert!','tok')).catch(()=>{});}
@@ -1065,9 +1045,9 @@ function startGame(){
     beginWortRound();
   } else {
     if(cfg.llm.provider==='none'){toast('Bitte zuerst LLM konfigurieren','terr');return;}
-    G.qNum=0;G.answererIdx=0;G.sesTopic=[];
-    hcast({type:'START_GESPRACH',players:G.players});
-    goTo('s-topics');loadTopics();
+    G.themengeberIdx=0;G.gRound=1;G.sesTopic=[];G.selections={};G.positionCards=[];G.mySelection=null;
+    hcast({type:'START_GESPRACH',players:G.players,themengeberIdx:0,gRound:1});
+    showGebeOrWait();
   }
 }
 
@@ -1209,12 +1189,26 @@ function nextRound(){
 // ═══════════════════════════════
 // GESPRÄCHSRUNDE LOGIC
 // ═══════════════════════════════
+
+// Show Themengeber screen or waiting screen depending on role
+function showGebeOrWait(){
+  G.selections={};G.mySelection=null;G.positionCards=[];
+  if(G.amThemengeber()){
+    document.getElementById('ts-rnum').textContent=G.gRound;
+    goTo('s-topics');loadTopics();
+  } else {
+    goTo('s-twait');
+    const geber=G.players[G.themengeberIdx];
+    document.getElementById('tw-geber').textContent=geber?esc(geber.name):'—';
+    renderTWait();
+  }
+}
+
 async function loadTopics(){
   document.getElementById('ts-load').style.display='block';
   document.getElementById('ts-list').innerHTML='';
   document.getElementById('btn-topic').disabled=true;
   document.getElementById('btn-regen').style.display='none';
-  // Clear custom input selection
   window._selTopic=null;
   document.getElementById('ts-custom').value='';
   document.getElementById('btn-custom-sel').disabled=true;
@@ -1230,8 +1224,8 @@ async function loadTopics(){
   window._topics=topics;
   document.getElementById('ts-list').innerHTML=topics.map((t,i)=>`
     <div class="topic-card" id="tc-${i}" onclick="selectTopic(${i},this)">
-      <div class="topic-de">${t.de}</div>
-      <div class="topic-uk" style="font-size:.76rem;color:var(--tdim);margin-top:4px;line-height:1.4">${t.uk}</div>
+      <div class="topic-de">${esc(t.de)}</div>
+      <div class="topic-uk" style="font-size:.76rem;color:var(--tdim);margin-top:4px;line-height:1.4">${esc(t.uk)}</div>
     </div>`).join('');
   document.getElementById('btn-regen').style.display='block';
 }
@@ -1242,7 +1236,6 @@ function selectTopic(i,el){
   document.querySelectorAll('.topic-card').forEach(c=>c.classList.remove('sel'));
   el.classList.add('sel');
   window._selTopic=window._topics[i];
-  // Clear custom input if topic card selected
   document.getElementById('ts-custom').value='';
   document.getElementById('btn-custom-sel').disabled=true;
   document.getElementById('btn-topic').disabled=false;
@@ -1255,9 +1248,7 @@ function onCustomTopicInput(val){
 function selectCustomTopic(){
   const val=document.getElementById('ts-custom').value.trim();
   if(val.length<3)return;
-  // Deselect AI topic cards
   document.querySelectorAll('.topic-card').forEach(c=>c.classList.remove('sel'));
-  // Set custom topic — de and uk same (LLM will handle in questions)
   window._selTopic={de:val,uk:val,custom:true};
   document.getElementById('btn-topic').disabled=false;
   toast('Eigenes Thema ausgewählt ✓','tok');
@@ -1265,92 +1256,304 @@ function selectCustomTopic(){
 
 function confirmTopic(){
   const t=window._selTopic;if(!t)return;
-  G.topic=t;G.qNum=0;G.answererIdx=0;
+  // Check topic not repeated in session
+  if(G.sesTopic.find(st=>st.de===t.de)){toast('Dieses Thema wurde bereits verwendet','terr');return;}
+  G.topic=t;
   addUsedTopic(t);G.sesTopic.push(t);
-  hcast({type:'TOPIC_CHOSEN',topic:t});showTopicToAll(t);
-}
-
-function showTopicToAll(topic){
-  G.topic=topic;G.qNum=0;goTo('s-question');genAndShowQ();
-}
-
-async function genAndShowQ(){
-  G.qNum++;G.votes={};G.myVote=0;
-  const answerer=G.players[G.answererIdx];
-  document.getElementById('q-num').textContent=G.qNum;
-  document.getElementById('q-n2').textContent='Frage №'+G.qNum;
-  document.getElementById('q-topic').textContent=G.topic?.de||''
-  document.getElementById('q-ans').textContent=answerer?.name||'—';
-  document.getElementById('q-ld').style.display='block';
-  document.getElementById('q-cnt').style.display='none';
-  document.getElementById('q-uk').classList.remove('show');
-  if(cfg.answerTime>0)startTimer('q-tm',cfg.answerTime,()=>doneAnswering());
-  else document.getElementById('q-tm').textContent='';
-  if(G.amA()){document.getElementById('q-actrl').style.display='block';document.getElementById('q-owait').style.display='none';}
-  else{document.getElementById('q-actrl').style.display='none';document.getElementById('q-owait').style.display='block';}
-  document.getElementById('q-pg').style.width=Math.min(G.qNum/G.players.length*100,100)+'%';
   if(G.isHost){
-    const q=await genQuestion();G.question=q;
-    hcast({type:'QUESTION',q,qNum:G.qNum,ai:G.answererIdx});showQuestion();
+    // Host is Themengeber — broadcast topic and generate position cards
+    hcast({type:'TOPIC_CHOSEN',topic:t});
+    showPositionCardsScreen(t);
+  } else {
+    // Guest is Themengeber — send to host for relay
+    gsend({type:'TOPIC_CHOSEN_BY_GEBER',topic:t});
+    showPositionCardsScreen(t);
   }
 }
 
-function showQuestion(){
-  const q=G.question;if(!q)return;
-  document.getElementById('q-ld').style.display='none';
-  document.getElementById('q-cnt').style.display='block';
-  document.getElementById('q-de').textContent=q.de;
-  document.getElementById('q-uk').textContent=q.uk;
-  document.getElementById('q-uk').classList.remove('show');
-  const tBtn=document.getElementById('btn-qtrans');if(tBtn)tBtn.textContent='🇺🇦 Übersetzung anzeigen';
-  // Auto-read question aloud if TTS enabled
-  if(cfg.ttsAuto) setTimeout(()=>ttsSpeak(q.de,'de-DE'),600);
+// Host receives topic from guest Themengeber
+function handleGeberTopicChosen(topic){
+  G.topic=topic;
+  addUsedTopic(topic);G.sesTopic.push(topic);
+  hcast({type:'TOPIC_CHOSEN',topic});
+  showPositionCardsScreen(topic);
 }
 
-function toggleQTrans(){
-  const el=document.getElementById('q-uk');const show=el.classList.toggle('show');
-  document.getElementById('btn-qtrans').textContent=show?'🇺🇦 Übersetzung verbergen':'🇺🇦 Übersetzung anzeigen';
-}
+// Show position cards screen and trigger AI generation (host generates, broadcasts)
+async function showPositionCardsScreen(topic){
+  G.topic=topic;G.selections={};G.mySelection=null;
+  document.getElementById('pos-topic').textContent=topic?.de||'';
+  document.getElementById('pos-list').innerHTML='';
+  document.getElementById('pos-custom-card').style.display='none';
+  document.getElementById('btn-pos-confirm').style.display='block';
+  document.getElementById('btn-pos-confirm').disabled=true;
+  document.getElementById('pos-done-msg').style.display='none';
+  document.getElementById('pos-custom-text').value='';
+  goTo('s-positions');
 
-function doneAnswering(){
-  clearTI();
-  // Broadcast DONE to all — no voting, just show after-answer screen
-  const m={type:'ANSWER_DONE',q:G.question,ai:G.answererIdx};
-  if(G.isHost){hcast(m);showAfterAnswer();}
-  else{gsend(m);showAfterAnswer();}
-}
-
-function showAfterAnswer(){
-  clearTI();
-  goTo('s-vote');
-  stats.questions++;LS.s('stats',stats);
-  resetVAICard();
-  document.getElementById('v-nm').textContent=G.players[G.answererIdx]?.name||'—';
-  document.getElementById('v-q').textContent=G.question?.de||'';
-  const amA=G.amA();
-  document.getElementById('v-answerer-ctrl').style.display=amA?'block':'none';
-  document.getElementById('v-others-wait').style.display=!amA?'block':'none';
-  document.getElementById('v-host-ctrl').style.display=G.isHost?'block':'none';
-  document.getElementById('v-guest-wait').style.display=(!G.isHost&&!amA)?'block':'none';
-  // If answerer is also host, show both
-  if(amA&&G.isHost){
-    document.getElementById('v-guest-wait').style.display='none';
-    document.getElementById('v-others-wait').style.display='none';
+  if(G.isHost){
+    document.getElementById('pos-load').style.display='block';
+    const cards=await genPositionCards(topic);
+    G.positionCards=cards||[];
+    if(cards&&cards.length){
+      hcast({type:'POSITION_CARDS',cards,topic});
+      renderPositionCards();
+    } else {
+      document.getElementById('pos-load').innerHTML=`<div style="color:var(--red);font-size:.82rem;text-align:center;padding:12px">
+        ❌ Fehler bei der Generierung der Positionskarten</div>`;
+    }
+  } else {
+    document.getElementById('pos-load').style.display='block';
+    // Guest waits for POSITION_CARDS from host
   }
 }
 
-// Kept for compatibility — redirects to new flow
-function showVoteResult(m){
-  G.players=m.players||G.players;
-  showAfterAnswer();
+function renderPositionCards(){
+  document.getElementById('pos-load').style.display='none';
+  const cards=G.positionCards;if(!cards?.length)return;
+  document.getElementById('pos-list').innerHTML=cards.map((c,i)=>`
+    <div class="topic-card" id="pc-${i}" onclick="selectPos(${i})" style="cursor:pointer">
+      <div style="display:flex;align-items:flex-start;gap:8px">
+        <div style="width:22px;height:22px;border-radius:50%;background:var(--bdim);border:1px solid var(--bmid);display:flex;align-items:center;justify-content:center;font-size:.7rem;color:var(--blu);font-weight:700;flex-shrink:0;margin-top:2px">${i+1}</div>
+        <div style="flex:1">
+          <div style="font-size:.88rem;line-height:1.5;color:var(--txt)">${esc(c.de)}</div>
+          <div style="font-size:.76rem;color:var(--tdim);margin-top:5px;line-height:1.4;font-style:italic">${esc(c.uk)}</div>
+        </div>
+      </div>
+    </div>`).join('');
+  document.getElementById('pos-custom-card').style.display='block';
 }
 
-function nextQuestion(){
-  G.answererIdx=(G.answererIdx+1)%G.players.length;G.qNum++;
-  hcast({type:'NEXT_Q',ai:G.answererIdx,qNum:G.qNum});goTo('s-question');genAndShowQ();
+window._selPosIdx=null;
+function selectPos(i){
+  window._selPosIdx=i;
+  document.querySelectorAll('#pos-list .topic-card').forEach(c=>c.classList.remove('sel'));
+  document.getElementById('pc-'+i).classList.add('sel');
+  document.getElementById('pos-custom-card').style.borderColor='var(--bmid)';
+  document.getElementById('pos-custom-card').style.background='var(--sur)';
+  document.getElementById('btn-pos-confirm').disabled=false;
 }
 
-function endTopic(){hcast({type:'GAME_OVER',players:G.players,mode:'gesprach'});showOver();}
+function selectPosCustom(){
+  window._selPosIdx=-1;
+  document.querySelectorAll('#pos-list .topic-card').forEach(c=>c.classList.remove('sel'));
+  document.getElementById('pos-custom-card').style.borderColor='var(--blu)';
+  document.getElementById('pos-custom-card').style.background='var(--bdim)';
+  if(document.getElementById('pos-custom-text').value.trim().length>=5)
+    document.getElementById('btn-pos-confirm').disabled=false;
+}
+
+function onPosCustomInput(){
+  if(window._selPosIdx===-1){
+    document.getElementById('btn-pos-confirm').disabled=
+      document.getElementById('pos-custom-text').value.trim().length<5;
+  }
+}
+
+function confirmPosition(){
+  const idx=window._selPosIdx;
+  if(idx===null||idx===undefined)return;
+  let text='';
+  if(idx===-1){
+    text=document.getElementById('pos-custom-text').value.trim();
+    if(text.length<5){toast('Bitte mindestens 5 Zeichen eingeben','terr');return;}
+  } else {
+    text=G.positionCards[idx]?.de||'';
+  }
+  G.mySelection={cardIdx:idx,text};
+  // Send selection notification to host (or handle locally if host)
+  const m={type:'POS_SELECTED',id:G.myId,cardIdx:idx,text};
+  if(G.isHost){
+    handlePosSelected(G.myId,idx,text);
+  } else {
+    gsend(m);
+  }
+  // Show done state
+  document.getElementById('btn-pos-confirm').style.display='none';
+  document.getElementById('pos-done-msg').style.display='block';
+  // Disable all cards
+  document.querySelectorAll('#pos-list .topic-card').forEach(c=>{c.style.pointerEvents='none';c.style.opacity='.6';});
+  document.getElementById('pos-custom-card').style.pointerEvents='none';
+  document.getElementById('pos-custom-card').style.opacity='.6';
+  // Host goes to pwait screen to see checklist
+  if(G.isHost) setTimeout(()=>{goTo('s-pwait');renderPWait();},800);
+}
+
+// Host tracks selections
+function handlePosSelected(playerId,cardIdx,text){
+  G.selections[playerId]={cardIdx,text};
+  // If host is on pwait screen, update it
+  renderPWait();
+  // Check if all picked
+  if(Object.keys(G.selections).length>=G.players.length){
+    document.getElementById('btn-pw-next').disabled=false;
+  }
+  // Broadcast selection count (not content) so guests know progress
+  hcast({type:'POS_PROGRESS',count:Object.keys(G.selections).length,total:G.players.length});
+}
+
+function renderPWait(){
+  const el=document.getElementById('pw-list');if(!el)return;
+  document.getElementById('pw-topic').textContent=G.topic?.de||'';
+  el.innerHTML=G.players.map(p=>{
+    const done=!!G.selections[p.id];
+    return `<div class="pi ${p.id===G.myId?'me':''}">
+      <div class="pl"><div class="av">${esc(p.name[0].toUpperCase())}</div>
+        <span class="pn">${esc(p.name)}</span></div>
+      <span class="cbdg ${done?'cok':'cwt'}">${done?'✓ Gewählt':'⏳ Wählt…'}</span>
+    </div>`;
+  }).join('');
+  const allDone=Object.keys(G.selections).length>=G.players.length;
+  document.getElementById('btn-pw-next').disabled=!allDone;
+}
+
+// If host has already selected their own position, show pwait screen
+function showPWaitIfHost(){
+  if(!G.isHost)return;
+  goTo('s-pwait');
+  renderPWait();
+}
+
+// Host reveals all positions
+function revealAllPositions(){
+  if(!G.isHost)return;
+  // Build full selections with names
+  const sel={};
+  G.players.forEach(p=>{
+    const s=G.selections[p.id];
+    if(s){
+      sel[p.id]={cardIdx:s.cardIdx,text:s.text,name:p.name};
+    }
+  });
+  G.selections=sel;
+  hcast({type:'ALL_REVEAL',selections:sel,topic:G.topic});
+  showReveal();
+}
+
+function showReveal(){
+  goTo('s-reveal');
+  document.getElementById('rv-topic').textContent=G.topic?.de||'';
+  const sel=G.selections;
+  const cards=G.positionCards||[];
+  let html='';
+  G.players.forEach(p=>{
+    const s=sel[p.id];
+    if(!s)return;
+    const isCustom=s.cardIdx===-1;
+    const cardLabel=isCustom?'Eigene Position':'Position '+(s.cardIdx+1);
+    html+=`<div class="card fi" style="border-left:3px solid var(--blu);margin-bottom:10px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+        <div class="av" style="width:28px;height:28px;font-size:.72rem">${esc(p.name[0].toUpperCase())}</div>
+        <div>
+          <div style="font-size:.88rem;font-weight:600;color:var(--txt)">${esc(p.name)}${p.id===G.myId?' (du)':''}</div>
+          <div style="font-size:.65rem;color:var(--blu)">${esc(cardLabel)}</div>
+        </div>
+      </div>
+      <div style="font-size:.86rem;line-height:1.5;color:var(--tmid)">${esc(s.text)}</div>
+    </div>`;
+  });
+  document.getElementById('rv-list').innerHTML=html;
+  // Host sees start discussion button, guests wait
+  document.getElementById('rv-ctrl').style.display=G.isHost?'block':'none';
+  document.getElementById('rv-gwait').style.display=G.isHost?'none':'block';
+}
+
+// Build discussion order: starting from player after Themengeber, Themengeber goes last
+function buildDiscussOrder(){
+  const order=[];
+  const n=G.players.length;
+  for(let i=1;i<=n;i++){
+    order.push(G.players[(G.themengeberIdx+i)%n].id);
+  }
+  return order;
+}
+
+function startDiscussion(){
+  if(!G.isHost)return;
+  G.discussOrder=buildDiscussOrder();
+  G.activeDiscIdx=0;
+  const speakerId=G.discussOrder[0];
+  const sel=G.selections[speakerId];
+  const m={type:'ACTIVE_SPEAKER',id:speakerId,order:1,total:G.discussOrder.length,
+    posText:sel?.text||'',posUk:getUkForSelection(sel),topic:G.topic?.de||''};
+  hcast(m);
+  showDiscussionScreen(m);
+}
+
+function getUkForSelection(sel){
+  if(!sel)return'';
+  if(sel.cardIdx===-1)return'';
+  const card=G.positionCards[sel.cardIdx];
+  return card?.uk||'';
+}
+
+function showDiscussionScreen(m){
+  goTo('s-discuss');
+  G.discussOrder=G.discussOrder||[];
+  const speaker=G.players.find(p=>p.id===m.id);
+  document.getElementById('dc-topic').textContent=m.topic||G.topic?.de||'';
+  document.getElementById('dc-speaker').textContent=speaker?esc(speaker.name):'—';
+  document.getElementById('dc-cur').textContent=m.order||1;
+  document.getElementById('dc-tot').textContent=m.total||G.players.length;
+  document.getElementById('dc-pg').style.width=((m.order||1)/(m.total||G.players.length)*100)+'%';
+  document.getElementById('dc-pos-de').textContent=m.posText||'';
+  document.getElementById('dc-pos-uk').textContent=m.posUk||'';
+  // Store current speaker info
+  G._currentSpeakerId=m.id;
+  G.activeDiscIdx=(m.order||1)-1;
+  const isMe=m.id===G.myId;
+  document.getElementById('dc-my-turn').style.display=isMe?'block':'none';
+  document.getElementById('dc-wait').style.display=isMe?'none':'block';
+}
+
+function speakerDone(){
+  const m={type:'SPEAKER_DONE'};
+  if(G.isHost){handleSpeakerDone();}
+  else{gsend(m);}
+}
+
+function handleSpeakerDone(){
+  if(!G.isHost)return;
+  G.activeDiscIdx++;
+  if(G.activeDiscIdx>=G.discussOrder.length){
+    // All done — round over
+    hcast({type:'G_ROUND_OVER'});
+    showGRoundOver();
+  } else {
+    const speakerId=G.discussOrder[G.activeDiscIdx];
+    const sel=G.selections[speakerId];
+    const m={type:'NEXT_SPEAKER',id:speakerId,order:G.activeDiscIdx+1,total:G.discussOrder.length,
+      posText:sel?.text||'',posUk:getUkForSelection(sel),topic:G.topic?.de||''};
+    hcast(m);
+    showDiscussionScreen(m);
+  }
+}
+
+function showGRoundOver(){
+  goTo('s-ground');
+  document.getElementById('gr-topic').textContent=G.topic?.de||'';
+  document.getElementById('gr-hist').innerHTML=G.sesTopic.map(t=>
+    `<span class="wchip">${esc(t.de)}</span>`).join('')||'<span style="color:var(--tdim)">Keine</span>';
+  const hctrl=document.getElementById('gr-hctrl');
+  if(G.isHost){hctrl.style.display='grid';}else{hctrl.style.display='none';}
+  document.getElementById('gr-gwait').style.display=G.isHost?'none':'block';
+}
+
+function gNextRound(){
+  if(!G.isHost)return;
+  G.themengeberIdx=(G.themengeberIdx+1)%G.players.length;
+  G.gRound++;
+  G.selections={};G.mySelection=null;G.positionCards=[];
+  hcast({type:'G_NEXT_ROUND',themengeberIdx:G.themengeberIdx,gRound:G.gRound});
+  showGebeOrWait();
+}
+
+function gEndGame(){
+  if(!G.isHost)return;
+  hcast({type:'GAME_OVER',players:G.players,mode:'gesprach'});showOver();
+}
+
+function endTopic(){gEndGame();}
 
 // ═══════════════════════════════
 // GAME OVER
@@ -1378,7 +1581,9 @@ function showOver(){
 
 function playAgain(){
   G.players.forEach(p=>{p.score=0;p.totalR=0;p.cntR=0;});
-  G.sesWords=[];G.sesTopic=[];selModeVal=null;
+  G.sesWords=[];G.sesTopic=[];G.selections={};G.positionCards=[];G.mySelection=null;
+  G.themengeberIdx=0;G.gRound=0;G.discussOrder=[];G.activeDiscIdx=0;
+  selModeVal=null;
   if(G.isHost){renderLobby();goTo('s-lobby');}else goTo('s-wait');
 }
 
@@ -1503,14 +1708,31 @@ Respond ONLY with a valid JSON array of exactly 4 items (no markdown):
   catch(e){window._lastLLMError=e.message;toast('LLM-Fehler: '+e.message,'terr');return null;}
 }
 
-async function genQuestion(){
-  const answerer=G.players[G.answererIdx];
-  const p=`You facilitate a German conversation group (B1-B2 learners).
-Topic: "${G.topic?.de}". Question number: ${G.qNum}. For: ${answerer?.name||'player'}.
-Generate ONE open-ended, controversial follow-up question. German B1-B2 level.
-JSON only: {"de":"Was denkst du...","uk":"Що ти думаєш..."}`;
-  try{return JSON.parse(await callLLM(p));}
-  catch{return {de:'Was denkst du über dieses Thema?',uk:'Що ти думаєш про цю тему?'};}
+async function genPositionCards(topic){
+  const p=`Generate exactly 5 diverse position cards for a German conversation group discussion.
+Topic: "${topic?.de||''}"
+
+Each card should express 3-5 sentences in German (B1-B2 level), presenting a real opinion that people might hold on this topic.
+The 5 cards must differ significantly from each other — cover the full spectrum of reasonable opinions.
+Do NOT use fake quotes, fake statistics, or attribute opinions to specific people.
+Each card should be a genuine, thoughtful perspective someone might have.
+
+Also provide a Ukrainian translation for each card.
+
+Respond ONLY with a valid JSON array of exactly 5 objects (no markdown):
+[
+  {"de": "Ich denke, dass... Meine Erfahrung zeigt... Deshalb bin ich der Meinung...", "uk": "Я думаю, що... Мій досвід показує... Тому я вважаю..."},
+  {"de": "...", "uk": "..."},
+  {"de": "...", "uk": "..."},
+  {"de": "...", "uk": "..."},
+  {"de": "...", "uk": "..."}
+]`;
+  try{
+    const txt=await callLLM(p);
+    const parsed=JSON.parse(txt.replace(/```json|```/g,'').trim());
+    return Array.isArray(parsed)?parsed.slice(0,5):null;
+  }
+  catch(e){window._lastLLMError=e.message;toast('LLM-Fehler: '+e.message,'terr');return null;}
 }
 
 // ── USED WORDS / TOPICS ──
@@ -1731,136 +1953,8 @@ function ttsAI(){
 function stopTTS(){if(ttsSynth)ttsSynth.cancel();}
 
 // ═══════════════════════════════
-// AI EXPERT OPINION
+// (AI Expert Opinion removed — not used in new Gesprächsrunde)
 // ═══════════════════════════════
-let aiMode='kurz'; // 'kurz' | 'lang'
-let aiLoaded=false;
-
-function setAiMode(mode){
-  aiMode=mode;
-  document.getElementById('ai-kurz').classList.toggle('on',mode==='kurz');
-  document.getElementById('ai-lang').classList.toggle('on',mode==='lang');
-  // If already loaded, regenerate with new length
-  if(aiLoaded)requestAIOpinion();
-}
-
-function resetAICard(){
-  aiLoaded=false;ttsAIText='';
-  // Old s-vres card (kept for compatibility)
-  const aiCard=document.getElementById('ai-card');
-  if(aiCard)aiCard.style.display='none';
-  stopTTS();
-}
-
-function resetVAICard(){
-  aiLoaded=false;ttsAIText='';
-  document.getElementById('v-ai-card').style.display='none';
-  document.getElementById('v-ai-loading').style.display='none';
-  document.getElementById('v-ai-content').style.display='none';
-  document.getElementById('v-ai-de').textContent='';
-  document.getElementById('v-ai-uk').textContent='';
-  document.getElementById('v-ai-uk').classList.remove('show');
-  const btn=document.getElementById('v-tts-ai-btn');
-  if(btn){btn.classList.remove('speaking');btn.textContent='🔊 Vorlesen';}
-  stopTTS();
-}
-
-function ttsVAI(){
-  if(!ttsAIText)return;
-  const btn=document.getElementById('v-tts-ai-btn');
-  if(ttsSynth.speaking){ttsSynth.cancel();btn.classList.remove('speaking');btn.textContent='🔊 Vorlesen';return;}
-  btn.classList.add('speaking');btn.textContent='⏹ Stopp';
-  ttsSpeak(ttsAIText,'de-DE',()=>{btn.classList.remove('speaking');btn.textContent='🔊 Vorlesen';});
-}
-
-function toggleVAiTrans(){
-  const el=document.getElementById('v-ai-uk');
-  const show=el.classList.toggle('show');
-  document.getElementById('v-ai-trans-btn').textContent=show?'🇺🇦 Verbergen':'🇺🇦 Übersetzung';
-}
-
-// Called by the answerer — generates and broadcasts to all
-async function requestAndBroadcastAI(){
-  const btn=document.getElementById('btn-ai-op');
-  if(btn){btn.disabled=true;btn.textContent='⏳ Wird geladen…';}
-  document.getElementById('v-answerer-ctrl').style.display='none';
-  showVAILoading();
-
-  const lengthInstr=aiMode==='kurz'
-    ?'Respond in 2-3 sentences maximum. Be concise and direct.'
-    :'Respond in 2-3 paragraphs. Cover multiple perspectives, mention relevant facts or examples, and suggest a nuanced conclusion.';
-
-  const prompt=`You are a German language expert and moderator for a language learning group.
-
-Topic: "${G.topic?.de||''}"
-Question asked: "${G.question?.de||''}"
-
-Give your expert opinion or commentary on this topic in German (B1-B2 level vocabulary, clear and accessible).
-${lengthInstr}
-Take a nuanced, balanced position.
-Then provide a Ukrainian translation of your response.
-
-Respond ONLY with valid JSON (no markdown):
-{"de": "Meiner Meinung nach…", "uk": "На мою думку…"}`;
-
-  try{
-    const txt=await callLLM(prompt);
-    const parsed=JSON.parse(txt.replace(/```json|```/g,'').trim());
-    // Broadcast to all peers
-    const m={type:'AI_OPINION',opinion:parsed};
-    if(G.isHost)hcast(m); else gsend(m);
-    // Show on own screen too
-    showAIOpinionFromPeer(parsed);
-  }catch(e){
-    console.error('AI opinion error:',e);
-    showAIError(e.message);
-    const btn2=document.getElementById('btn-ai-op');
-    if(btn2){btn2.disabled=false;btn2.textContent='🧠 Nochmals versuchen';}
-    document.getElementById('v-answerer-ctrl').style.display='block';
-  }
-}
-
-// Called on all screens when AI opinion arrives via PeerJS
-function showAIOpinionFromPeer(opinion){
-  if(!opinion)return;
-  ttsAIText=opinion.de||'';
-  // Show on v-vote screen
-  document.getElementById('v-ai-card').style.display='block';
-  document.getElementById('v-ai-loading').style.display='none';
-  document.getElementById('v-ai-de').textContent=opinion.de||'';
-  document.getElementById('v-ai-uk').textContent=opinion.uk||'';
-  document.getElementById('v-ai-uk').classList.remove('show');
-  document.getElementById('v-ai-content').style.display='block';
-  // Hide loading states
-  document.getElementById('v-answerer-ctrl').style.display='none';
-  document.getElementById('v-others-wait').style.display='none';
-  aiLoaded=true;
-  if(cfg.ttsAuto&&opinion.de) setTimeout(()=>ttsVAI(),500);
-}
-
-function showVAILoading(){
-  document.getElementById('v-ai-card').style.display='block';
-  document.getElementById('v-ai-loading').style.display='block';
-  document.getElementById('v-ai-content').style.display='none';
-}
-
-function showAILoading(){showVAILoading();}
-
-function showAIError(msg){
-  document.getElementById('v-ai-loading').style.display='none';
-  document.getElementById('v-ai-de').textContent='Fehler: '+msg;
-  document.getElementById('v-ai-content').style.display='block';
-  document.getElementById('v-ai-card').style.display='block';
-}
-
-// Legacy alias
-async function requestAIOpinion(){requestAndBroadcastAI();}
-
-function toggleAiTrans(){
-  const el=document.getElementById('ai-uk');
-  const show=el.classList.toggle('show');
-  document.querySelector('[onclick="toggleAiTrans()"]').textContent=show?'🇺🇦 Verbergen':'🇺🇦 Übersetzung';
-}
 
 document.addEventListener('DOMContentLoaded',()=>{
   initHome();lsUI();
