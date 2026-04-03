@@ -235,8 +235,10 @@ input:focus{border-color:var(--amid)}input::placeholder{color:var(--tdim)}
     <div class="ct">Spieler</div>
     <div style="margin-bottom:12px"><label class="fl">Dein Name</label>
       <input type="text" id="h-name" placeholder="z.B. Andrii" maxlength="20" autocomplete="off"></div>
-    <button class="btn bp" onclick="doCreate()">🎮&nbsp; Neues Spiel erstellen</button>
-    <div class="div">oder</div>
+    <div id="btn-create-wrap">
+      <button class="btn bp" onclick="doCreate()">🎮&nbsp; Neues Spiel erstellen</button>
+      <div class="div">oder</div>
+    </div>
     <div style="margin-bottom:12px"><label class="fl">Raum-Code</label>
       <input type="text" id="h-code" placeholder="z.B. WOLF42" maxlength="8"
         style="text-transform:uppercase;letter-spacing:.18em;font-size:1.1rem;text-align:center"
@@ -248,8 +250,6 @@ input:focus{border-color:var(--amid)}input::placeholder{color:var(--tdim)}
     <div class="sgrid">
       <div class="sbox"><div class="snum" id="st-g">0</div><div class="slbl">Spiele</div></div>
       <div class="sbox"><div class="snum" id="st-w">0</div><div class="slbl">Wörter DB</div></div>
-      <div class="sbox"><div class="snum" id="st-q">0</div><div class="slbl">Fragen</div></div>
-      <div class="sbox"><div class="snum" id="st-r">—</div><div class="slbl">Ø Bewertung</div></div>
     </div>
   </div>
   <button class="btn bgh" onclick="gS('s-settings');lsUI()">⚙️&nbsp; Einstellungen</button>
@@ -323,26 +323,6 @@ input:focus{border-color:var(--amid)}input::placeholder{color:var(--tdim)}
   </div>
   <div class="card">
     <div class="ct">Gesprächsrunde</div>
-    <div class="srow2">
-      <div><div class="sn">Antwortzeit (0 = unbegrenzt)</div></div>
-      <div class="nrow" style="width:116px">
-        <button class="nbtn" onclick="adj('nv-at',-30,0,300)">−</button>
-        <div class="nval" id="nv-at">0</div>
-        <button class="nbtn" onclick="adj('nv-at',30,0,300)">+</button>
-      </div>
-    </div>
-    <div class="srow2">
-      <div><div class="sn">Bewertungszeit (Sek)</div></div>
-      <div class="nrow" style="width:116px">
-        <button class="nbtn" onclick="adj('nv-vt',-5,10,60)">−</button>
-        <div class="nval" id="nv-vt">30</div>
-        <button class="nbtn" onclick="adj('nv-vt',5,10,60)">+</button>
-      </div>
-    </div>
-    <div class="srow2">
-      <div><div class="sn">🔊 Frage automatisch vorlesen</div><div class="sd">TTS — Deutsch (Web Speech API)</div></div>
-      <div class="tog" id="t-tts" onclick="this.classList.toggle('on')"></div>
-    </div>
     <div class="srow2">
       <div><div class="sn">Gesprächsthemen gespeichert</div><div class="sd" id="thi">0 Themen</div></div>
       <button class="btn bgh btn-sm" onclick="clrTopics()">Löschen</button>
@@ -542,7 +522,10 @@ input:focus{border-color:var(--amid)}input::placeholder{color:var(--tdim)}
   </div>
   <div class="card fi"><div class="ct">Punkte diese Runde</div><div id="wr-sc"></div></div>
   <div class="card fi"><div class="ct">Gesamtstand</div><div id="wr-tt"></div></div>
-  <div id="wr-btn"><button class="btn bp" onclick="nextRound()">▶&nbsp; Nächste Runde</button></div>
+  <div id="wr-btn" style="display:grid;gap:8px">
+    <button class="btn bp" onclick="nextRound()">▶&nbsp; Nächste Runde</button>
+    <button class="btn bd" onclick="wortToLobby()">🏠&nbsp; Zurück zur Lobby</button>
+  </div>
   <div id="wr-wt" style="display:none;text-align:center;padding:14px;font-size:.82rem;color:var(--tdim)">
     <div class="dots"><span>•</span><span>•</span><span>•</span></div>Warte auf Host…
   </div>
@@ -779,7 +762,6 @@ function esc(s){if(!s)return'';const d=document.createElement('div');d.appendChi
 // ── CONFIG ──
 let cfg=LS.g('cfg',{
   diff:1,abs:1,hist:true,maxW:200,timer:60,rounds:10,
-  answerTime:0,voteTime:30,ttsAuto:false,
   llm:{provider:'none',
     anthropic:{key:'',model:'claude-sonnet-4-20250514'},
     openai:{key:'',model:'gpt-5.4'},
@@ -922,6 +904,7 @@ function onHost(m){
     case 'G_ROUND_OVER':showGRoundOver();break;
     case 'G_NEXT_ROUND':G.themengeberIdx=m.themengeberIdx;G.gRound=m.gRound;showGebeOrWait();break;
     case 'GAME_OVER':G.players=m.players;G.mode=m.mode||'wort';showOver();break;
+    case 'BACK_TO_LOBBY':G.players=m.players;goTo('s-wait');renderWait();break;
   }
 }
 
@@ -1183,6 +1166,13 @@ function nextRound(){
   }
   G.di=(G.di+1)%G.players.length;G.round++;
   hcast({type:'NEXT_WORT',di:G.di,round:G.round,players:G.players});beginWortRound();
+}
+function wortToLobby(){
+  clearTI();
+  G.players.forEach(p=>{p.score=0;p.totalR=0;p.cntR=0;});
+  G.sesWords=[];selModeVal=null;
+  hcast({type:'BACK_TO_LOBBY',players:G.players});
+  renderLobby();goTo('s-lobby');
 }
 
 // ═══════════════════════════════
@@ -1755,8 +1745,6 @@ function lsUI(){
   document.getElementById('nv-m').textContent=cfg.maxW;
   document.getElementById('nv-t').textContent=cfg.timer;
   document.getElementById('nv-r').textContent=cfg.rounds;
-  document.getElementById('nv-at').textContent=cfg.answerTime;
-  document.getElementById('nv-vt').textContent=cfg.voteTime;
   const llm=cfg.llm;
   selPByName(llm.provider||'none');
   document.getElementById('ak').value=llm.anthropic?.key||'';
@@ -1769,7 +1757,6 @@ function lsUI(){
   document.getElementById('ok-model').value=llm.openai?.custom||'';
   document.getElementById('gk-model').value=llm.gemini?.custom||'';
   updDB();updTopics();
-  setTog('t-tts',cfg.ttsAuto||false);
 }
 
 function saveCfg(){
@@ -1778,8 +1765,6 @@ function saveCfg(){
   cfg.maxW=parseInt(document.getElementById('nv-m').textContent);
   cfg.timer=parseInt(document.getElementById('nv-t').textContent);
   cfg.rounds=parseInt(document.getElementById('nv-r').textContent);
-  cfg.answerTime=parseInt(document.getElementById('nv-at').textContent);
-  cfg.voteTime=parseInt(document.getElementById('nv-vt').textContent);
   const p=document.querySelector('#llm-prov .llm-opt.on')?.dataset.p||'none';
   cfg.llm={provider:p,
     anthropic:{key:document.getElementById('ak').value.trim(),
@@ -1791,7 +1776,6 @@ function saveCfg(){
     gemini:{key:document.getElementById('gk').value.trim(),
       model:document.querySelector('#ms-g .mopt.on')?.dataset.m||'gemini-2.0-flash',
       custom:document.getElementById('gk-model').value.trim()}};
-  cfg.ttsAuto=document.getElementById('t-tts').classList.contains('on');
   LS.s('cfg',cfg);while(usedW.length>cfg.maxW)usedW.shift();LS.s('used',usedW);
   toast('Gespeichert ✓','tok');gB();initHome();
 }
@@ -1896,9 +1880,6 @@ function genCode(){
 function initHome(){
   document.getElementById('st-g').textContent=stats.games;
   document.getElementById('st-w').textContent=usedW.length;
-  document.getElementById('st-q').textContent=stats.questions;
-  const avgR=stats.cntR?Math.round(stats.totalR/stats.cntR*10)/10:0;
-  document.getElementById('st-r').textContent=avgR||'—';
 }
 let toT=null;
 function toast(msg,cls=''){
@@ -1956,6 +1937,8 @@ document.addEventListener('DOMContentLoaded',()=>{
   if(urlRoom){
     document.getElementById('h-code').value=urlRoom.toUpperCase();
     history.replaceState(null,'',location.pathname);
+    // Hide "create new game" section, focus on join
+    document.getElementById('btn-create-wrap').style.display='none';
   }
   document.addEventListener('click',e=>{
     const m=e.target.closest('.mopt');if(!m)return;
