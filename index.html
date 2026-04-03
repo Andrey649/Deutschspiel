@@ -596,10 +596,10 @@ input:focus{border-color:var(--amid)}input::placeholder{color:var(--tdim)}
 </div>
 <div class="body">
   <div style="text-align:center;margin-bottom:10px">
-    <div style="font-size:.62rem;color:var(--tdim);letter-spacing:.12em;text-transform:uppercase;margin-bottom:3px">Thema</div>
-    <div style="font-size:.92rem;font-weight:600;color:var(--blu)" id="pos-topic"></div>
+    <div style="font-size:.68rem;color:var(--tdim);letter-spacing:.12em;text-transform:uppercase;margin-bottom:3px">Thema</div>
+    <div style="font-size:1.1rem;font-weight:600;color:var(--blu)" id="pos-topic"></div>
   </div>
-  <div style="font-size:.78rem;color:var(--tdim);text-align:center;margin-bottom:12px">
+  <div style="font-size:.85rem;color:var(--tdim);text-align:center;margin-bottom:12px">
     Wähle genau eine Position, die deiner Meinung am nächsten ist:
   </div>
   <div id="pos-load" style="text-align:center;padding:20px 0">
@@ -636,8 +636,8 @@ input:focus{border-color:var(--amid)}input::placeholder{color:var(--tdim)}
 <div class="topbar"><div></div><span class="tb" style="color:var(--blu)">Positionen wählen</span><div></div></div>
 <div class="body">
   <div style="text-align:center;margin-bottom:12px">
-    <div style="font-size:.62rem;color:var(--tdim);letter-spacing:.12em;text-transform:uppercase;margin-bottom:3px">Thema</div>
-    <div style="font-size:.92rem;font-weight:600;color:var(--blu)" id="pw-topic"></div>
+    <div style="font-size:.68rem;color:var(--tdim);letter-spacing:.12em;text-transform:uppercase;margin-bottom:3px">Thema</div>
+    <div style="font-size:1.1rem;font-weight:600;color:var(--blu)" id="pw-topic"></div>
   </div>
   <div class="card">
     <div class="ct" style="color:var(--blu)">Wer hat gewählt?</div>
@@ -657,8 +657,8 @@ input:focus{border-color:var(--amid)}input::placeholder{color:var(--tdim)}
 <div class="topbar"><div></div><span class="tb" style="color:var(--blu)">Alle Positionen</span><div></div></div>
 <div class="body">
   <div style="text-align:center;margin-bottom:12px">
-    <div style="font-size:.62rem;color:var(--tdim);letter-spacing:.12em;text-transform:uppercase;margin-bottom:3px">Thema</div>
-    <div style="font-size:.92rem;font-weight:600;color:var(--blu)" id="rv-topic"></div>
+    <div style="font-size:.68rem;color:var(--tdim);letter-spacing:.12em;text-transform:uppercase;margin-bottom:3px">Thema</div>
+    <div style="font-size:1.1rem;font-weight:600;color:var(--blu)" id="rv-topic"></div>
   </div>
   <div id="rv-list"></div>
   <div id="rv-ctrl" style="display:none;margin-top:12px">
@@ -714,7 +714,7 @@ input:focus{border-color:var(--amid)}input::placeholder{color:var(--tdim)}
   </div>
   <div class="card">
     <div class="ct" style="color:var(--blu)">Thema</div>
-    <div style="font-size:.95rem;color:var(--txt);line-height:1.4" id="gr-topic"></div>
+    <div style="font-size:1.1rem;color:var(--txt);line-height:1.4" id="gr-topic"></div>
   </div>
   <div class="card">
     <div class="ct" style="color:var(--blu)">Bisherige Themen</div>
@@ -722,7 +722,7 @@ input:focus{border-color:var(--amid)}input::placeholder{color:var(--tdim)}
   </div>
   <div id="gr-hctrl" style="display:none;gap:10px;margin-top:8px">
     <button class="btn bp" onclick="gNextRound()" style="--accent:var(--blu)">🔄&nbsp; Nächste Runde</button>
-    <button class="btn br" onclick="gEndGame()">🏁&nbsp; Spiel beenden</button>
+    <button class="btn bd" onclick="gToLobby()">🏠&nbsp; Zurück zur Lobby</button>
   </div>
   <div id="gr-gwait" style="display:none;text-align:center;padding:14px;font-size:.82rem;color:var(--tdim)">
     <div class="dots"><span>•</span><span>•</span><span>•</span></div>Host entscheidet…
@@ -1304,7 +1304,7 @@ function renderPositionCards(){
       <div style="display:flex;align-items:flex-start;gap:8px">
         <div style="width:22px;height:22px;border-radius:50%;background:var(--bdim);border:1px solid var(--bmid);display:flex;align-items:center;justify-content:center;font-size:.7rem;color:var(--blu);font-weight:700;flex-shrink:0;margin-top:2px">${i+1}</div>
         <div style="flex:1">
-          <div style="font-size:.88rem;line-height:1.5;color:var(--txt)">${esc(c.de)}</div>
+          <div style="font-size:1.05rem;line-height:1.5;color:var(--txt)">${esc(c.de)}</div>
         </div>
       </div>
     </div>`).join('');
@@ -1432,11 +1432,11 @@ function showReveal(){
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
         <div class="av" style="width:28px;height:28px;font-size:.72rem">${esc(p.name[0].toUpperCase())}</div>
         <div>
-          <div style="font-size:.88rem;font-weight:600;color:var(--txt)">${esc(p.name)}${p.id===G.myId?' (du)':''}</div>
-          <div style="font-size:.65rem;color:var(--blu)">${esc(cardLabel)}</div>
+          <div style="font-size:1rem;font-weight:600;color:var(--txt)">${esc(p.name)}${p.id===G.myId?' (du)':''}</div>
+          <div style="font-size:.72rem;color:var(--blu)">${esc(cardLabel)}</div>
         </div>
       </div>
-      <div style="font-size:.86rem;line-height:1.5;color:var(--tmid)">${esc(s.text)}</div>
+      <div style="font-size:1rem;line-height:1.5;color:var(--tmid)">${esc(s.text)}</div>
     </div>`;
   });
   document.getElementById('rv-list').innerHTML=html;
@@ -1527,12 +1527,17 @@ function gNextRound(){
   showGebeOrWait();
 }
 
-function gEndGame(){
+function gToLobby(){
   if(!G.isHost)return;
-  hcast({type:'GAME_OVER',players:G.players,mode:'gesprach'});showOver();
+  clearTI();
+  G.players.forEach(p=>{p.score=0;p.totalR=0;p.cntR=0;});
+  G.sesWords=[];G.usedTopics=[];selModeVal=null;
+  hcast({type:'BACK_TO_LOBBY',players:G.players});
+  renderLobby();goTo('s-lobby');
 }
 
-function endTopic(){gEndGame();}
+function gEndGame(){gToLobby();}
+function endTopic(){gToLobby();}
 
 // ═══════════════════════════════
 // GAME OVER
