@@ -1256,8 +1256,8 @@ function selectCustomTopic(){
 
 function confirmTopic(){
   const t=window._selTopic;if(!t)return;
-  // Check topic not repeated in session
-  if(G.sesTopic.find(st=>st.de===t.de)){toast('Dieses Thema wurde bereits verwendet','terr');return;}
+  // Check topic not repeated ever (localStorage + session)
+  if(isTopicUsed(t)||G.sesTopic.find(st=>st.de===t.de)){toast('Dieses Thema wurde bereits verwendet','terr');return;}
   G.topic=t;
   addUsedTopic(t);G.sesTopic.push(t);
   if(G.isHost){
@@ -1686,7 +1686,7 @@ async function genTopics(){
   const dm={1:'A1-A2: simple everyday topics for German beginners. Short, clear sentences.',
     2:'B1-B2: intermediate social and cultural topics.',
     3:'C1-C2: complex philosophical, political or ethical topics.'};
-  const used=usedTopics.slice(-30).map(t=>t.de).join('; ');
+  const used=usedTopics.map(t=>t.de).join('; ');
   const p=`Generate exactly 4 CONTROVERSIAL or OPINION-BASED discussion topics in German for a language group (4 Ukrainian learners + 1 German native speaker).
 Level: ${dm[cfg.diff]}
 Topics must spark genuine debate where people can have different valid opinions.
@@ -1703,7 +1703,8 @@ Respond ONLY with a valid JSON array of exactly 4 items (no markdown):
   try{
     const txt=await callLLM(p);
     const parsed=JSON.parse(txt.replace(/```json|```/g,'').trim());
-    return Array.isArray(parsed)?parsed.slice(0,4):null;
+    if(!Array.isArray(parsed))return null;
+    return parsed.filter(t=>!isTopicUsed(t)).slice(0,4);
   }
   catch(e){window._lastLLMError=e.message;toast('LLM-Fehler: '+e.message,'terr');return null;}
 }
@@ -1750,7 +1751,12 @@ function updDB(){
 function addUsedTopic(t){
   if(!t?.de||usedTopics.find(u=>u.de===t.de))return;
   usedTopics.push({de:t.de,uk:t.uk,addedAt:Date.now()});
-  while(usedTopics.length>200)usedTopics.shift();LS.s('topics',usedTopics);
+  LS.s('topics',usedTopics);
+}
+function isTopicUsed(t){
+  if(!t?.de)return false;
+  const norm=s=>s.trim().toLowerCase().replace(/[?.!,;:]+$/,'');
+  return usedTopics.some(u=>norm(u.de)===norm(t.de));
 }
 function clrTopics(){if(!confirm('Themen-Verlauf löschen?'))return;usedTopics=[];LS.s('topics',usedTopics);updTopics();toast('Gelöscht','tok');}
 function updTopics(){document.getElementById('thi').textContent=usedTopics.length+' Themen';}
