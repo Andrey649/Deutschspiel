@@ -589,10 +589,10 @@ input:focus{border-color:var(--amid)}input::placeholder{color:var(--tdim)}
 </div>
 </div>
 
-<!-- GESPRÄCHSRUNDE: POSITION CARDS -->
+<!-- GESPRÄCHSRUNDE: POSITIONS -->
 <div class="scr" id="s-positions">
 <div class="topbar">
-  <div></div><span class="tb" style="color:var(--blu)">Positionskarten</span><div></div>
+  <div></div><span class="tb" style="color:var(--blu)">Positionen</span><div></div>
 </div>
 <div class="body">
   <div style="text-align:center;margin-bottom:10px">
@@ -600,73 +600,19 @@ input:focus{border-color:var(--amid)}input::placeholder{color:var(--tdim)}
     <div style="font-size:1.1rem;font-weight:600;color:var(--blu)" id="pos-topic"></div>
   </div>
   <div style="font-size:.85rem;color:var(--tdim);text-align:center;margin-bottom:12px">
-    Wähle genau eine Position, die deiner Meinung am nächsten ist:
+    Eure Rollen: zwei gegensätzliche Positionen
   </div>
   <div id="pos-load" style="text-align:center;padding:20px 0">
     <div class="spin" style="border-top-color:var(--blu)"></div>
     <div style="margin-top:8px;font-size:.78rem;color:var(--tdim)">Positionen werden generiert…</div>
   </div>
   <div id="pos-list"></div>
-
-  <!-- Custom position -->
-  <div class="card" id="pos-custom-card" style="display:none;border-style:dashed;border-color:var(--bmid);cursor:pointer"
-    onclick="selectPosCustom()">
-    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
-      <div style="width:24px;height:24px;border-radius:50%;background:var(--bdim);border:1px solid var(--bmid);display:flex;align-items:center;justify-content:center;font-size:.7rem;color:var(--blu);font-weight:700;flex-shrink:0">✎</div>
-      <div style="font-size:.82rem;font-weight:600;color:var(--blu)">Meine Position</div>
-    </div>
-    <textarea id="pos-custom-text" placeholder="Deine eigene Meinung auf Deutsch eingeben…"
-      style="width:100%;min-height:70px;background:var(--sur2);border:1px solid var(--brd);border-radius:var(--rs);padding:10px;font-family:'Outfit',sans-serif;font-size:.85rem;color:var(--txt);resize:vertical;outline:none"
-      onclick="event.stopPropagation()" oninput="onPosCustomInput()"></textarea>
-  </div>
-
-  <button class="btn bp" id="btn-pos-confirm" onclick="confirmPosition()" disabled style="--accent:var(--blu);margin-top:8px">
-    ✓&nbsp; Position bestätigen
-  </button>
-  <div id="pos-done-msg" style="display:none;text-align:center;padding:20px 0">
-    <div style="font-size:2rem">✅</div>
-    <div style="font-size:.88rem;color:var(--grn);margin-top:6px;font-weight:600">Position gewählt!</div>
-    <div style="font-size:.76rem;color:var(--tdim);margin-top:4px">Warte auf andere Spieler…</div>
-  </div>
-</div>
-</div>
-
-<!-- GESPRÄCHSRUNDE: POSITION WAIT (Host sees checklist) -->
-<div class="scr" id="s-pwait">
-<div class="topbar"><div></div><span class="tb" style="color:var(--blu)">Positionen wählen</span><div></div></div>
-<div class="body">
-  <div style="text-align:center;margin-bottom:12px">
-    <div style="font-size:.68rem;color:var(--tdim);letter-spacing:.12em;text-transform:uppercase;margin-bottom:3px">Thema</div>
-    <div style="font-size:1.1rem;font-weight:600;color:var(--blu)" id="pw-topic"></div>
-  </div>
-  <div class="card">
-    <div class="ct" style="color:var(--blu)">Wer hat gewählt?</div>
-    <div id="pw-list"></div>
-  </div>
-  <button class="btn bp" id="btn-pw-next" onclick="revealAllPositions()" disabled style="--accent:var(--blu)">
-    ▶&nbsp; Weiter — alle Positionen aufdecken
-  </button>
-  <div id="pw-gwait" style="display:none;text-align:center;padding:14px;font-size:.82rem;color:var(--tdim)">
-    <div class="dots"><span>•</span><span>•</span><span>•</span></div>Warte auf alle Spieler…
-  </div>
-</div>
-</div>
-
-<!-- GESPRÄCHSRUNDE: REVEAL -->
-<div class="scr" id="s-reveal">
-<div class="topbar"><div></div><span class="tb" style="color:var(--blu)">Alle Positionen</span><div></div></div>
-<div class="body">
-  <div style="text-align:center;margin-bottom:12px">
-    <div style="font-size:.68rem;color:var(--tdim);letter-spacing:.12em;text-transform:uppercase;margin-bottom:3px">Thema</div>
-    <div style="font-size:1.1rem;font-weight:600;color:var(--blu)" id="rv-topic"></div>
-  </div>
-  <div id="rv-list"></div>
-  <div id="rv-ctrl" style="display:none;margin-top:12px">
+  <div id="pos-ctrl" style="display:none;margin-top:12px">
     <button class="btn bp" onclick="startDiscussion()" style="--accent:var(--blu)">
       🎙️&nbsp; Diskussion starten
     </button>
   </div>
-  <div id="rv-gwait" style="display:none;text-align:center;padding:14px;font-size:.82rem;color:var(--tdim)">
+  <div id="pos-gwait" style="display:none;text-align:center;padding:14px;font-size:.82rem;color:var(--tdim)">
     <div class="dots"><span>•</span><span>•</span><span>•</span></div>Host startet Diskussion…
   </div>
 </div>
@@ -688,6 +634,7 @@ input:focus{border-color:var(--amid)}input::placeholder{color:var(--tdim)}
   <div class="abadge" style="--adim:var(--bdim);--amid:var(--bmid);--accent:var(--blu)">
     <div class="albl">Erklärt gerade</div>
     <div class="aname" style="color:var(--blu)" id="dc-speaker">—</div>
+    <div class="albl" style="margin-top:4px"><span id="dc-side"></span></div>
   </div>
   <div class="qcard" style="text-align:left">
     <div style="font-size:.62rem;color:var(--blu);letter-spacing:.15em;text-transform:uppercase;margin-bottom:8px">Gewählte Position</div>
@@ -781,7 +728,7 @@ let G={
   // Gesprächsrunde
   topic:null,sesTopic:[],
   themengeberIdx:0,gRound:0,
-  positionCards:[],selections:{},mySelection:null,
+  positions:{pro:null,contra:null},
   activeDiscIdx:0,discussOrder:[],
   // shared
   tiInt:null,tiLeft:0,
@@ -877,9 +824,6 @@ function onGuest(c,m){
   } else if(m.type==='TOPIC_CHOSEN_BY_GEBER'){
     // Themengeber (guest) chose topic — host processes
     handleGeberTopicChosen(m.topic);
-  } else if(m.type==='POS_SELECTED'){
-    // Guest selected a position — host tracks
-    handlePosSelected(m.id,m.cardIdx,m.text);
   } else if(m.type==='SPEAKER_DONE'){
     // Active speaker (guest) finished — host advances
     handleSpeakerDone();
@@ -896,9 +840,7 @@ function onHost(m){
     case 'WORT_RESULT':G.word=m.word;G.players=m.players;if(cfg.hist&&m.word)addUsed(m.word);showWortResult(m);break;
     case 'NEXT_WORT':G.di=m.di;G.round=m.round;G.players=m.players;beginWortRound();break;
     case 'TOPIC_CHOSEN':G.topic=m.topic;showPositionCardsScreen(m.topic);break;
-    case 'POSITION_CARDS':G.positionCards=m.cards;G.topic=m.topic;renderPositionCards();break;
-    case 'POS_PROGRESS':break; // guests can ignore progress count
-    case 'ALL_REVEAL':G.selections=m.selections;G.topic=m.topic;showReveal();break;
+    case 'POSITIONS_ASSIGNED':G.positions=m.positions;G.topic=m.topic;renderPositions();break;
     case 'ACTIVE_SPEAKER':showDiscussionScreen(m);break;
     case 'NEXT_SPEAKER':showDiscussionScreen(m);break;
     case 'G_ROUND_OVER':showGRoundOver();break;
@@ -1027,7 +969,8 @@ function startGame(){
     beginWortRound();
   } else {
     if(cfg.llm.provider==='none'){toast('Bitte zuerst LLM konfigurieren','terr');return;}
-    G.themengeberIdx=0;G.gRound=1;G.sesTopic=[];G.selections={};G.positionCards=[];G.mySelection=null;
+    if(G.players.length<3){toast('Gesprächsrunde benötigt mindestens 3 Spieler','terr');return;}
+    G.themengeberIdx=0;G.gRound=1;G.sesTopic=[];G.positions={pro:null,contra:null};
     hcast({type:'START_GESPRACH',players:G.players,themengeberIdx:0,gRound:1,cfg:{diff:cfg.diff}});
     showGebeOrWait();
   }
@@ -1181,7 +1124,7 @@ function wortToLobby(){
 
 // Show Themengeber screen or waiting screen depending on role
 function showGebeOrWait(){
-  G.selections={};G.mySelection=null;G.positionCards=[];
+  G.positions={pro:null,contra:null};
   if(G.amThemengeber()){
     document.getElementById('ts-rnum').textContent=G.gRound;
     goTo('s-topics');loadTopics();
@@ -1267,202 +1210,85 @@ function handleGeberTopicChosen(topic){
   showPositionCardsScreen(topic);
 }
 
-// Show position cards screen and trigger AI generation (host generates, broadcasts)
+// Show positions screen and trigger AI generation + random assignment (host only, broadcasts)
 async function showPositionCardsScreen(topic){
-  G.topic=topic;G.selections={};G.mySelection=null;
+  G.topic=topic;
+  G.positions={pro:null,contra:null};
   document.getElementById('pos-topic').textContent=topic?.de||'';
   document.getElementById('pos-list').innerHTML='';
-  document.getElementById('pos-custom-card').style.display='none';
-  document.getElementById('btn-pos-confirm').style.display='block';
-  document.getElementById('btn-pos-confirm').disabled=true;
-  document.getElementById('pos-done-msg').style.display='none';
-  document.getElementById('pos-custom-text').value='';
+  document.getElementById('pos-ctrl').style.display='none';
+  document.getElementById('pos-gwait').style.display='none';
   goTo('s-positions');
 
   if(G.isHost){
     document.getElementById('pos-load').style.display='block';
-    const cards=await genPositionCards(topic);
-    G.positionCards=cards||[];
-    if(cards&&cards.length){
-      hcast({type:'POSITION_CARDS',cards,topic});
-      renderPositionCards();
-    } else {
-      document.getElementById('pos-load').innerHTML=`<div style="color:var(--red);font-size:.82rem;text-align:center;padding:12px">
-        ❌ Fehler bei der Generierung der Positionskarten</div>`;
+    const res=await genPositions(topic);
+    if(!res){
+      document.getElementById('pos-load').innerHTML=`<div style="color:var(--red);font-size:.82rem;text-align:center;padding:12px">❌ Fehler bei der Generierung der Positionen</div>`;
+      return;
     }
+    const candidates=G.players.filter((_,i)=>i!==G.themengeberIdx);
+    const shuffled=[...candidates].sort(()=>Math.random()-0.5);
+    G.positions={
+      pro:{de:res.pro,playerId:shuffled[0].id},
+      contra:{de:res.contra,playerId:shuffled[1].id}
+    };
+    hcast({type:'POSITIONS_ASSIGNED',positions:G.positions,topic});
+    renderPositions();
   } else {
     document.getElementById('pos-load').style.display='block';
-    // Guest waits for POSITION_CARDS from host
   }
 }
 
-function renderPositionCards(){
+function renderPositions(){
   document.getElementById('pos-load').style.display='none';
-  const cards=G.positionCards;if(!cards?.length)return;
-  document.getElementById('pos-list').innerHTML=cards.map((c,i)=>`
-    <div class="topic-card" id="pc-${i}" onclick="selectPos(${i})" style="cursor:pointer">
-      <div style="display:flex;align-items:flex-start;gap:8px">
-        <div style="width:22px;height:22px;border-radius:50%;background:var(--bdim);border:1px solid var(--bmid);display:flex;align-items:center;justify-content:center;font-size:.7rem;color:var(--blu);font-weight:700;flex-shrink:0;margin-top:2px">${i+1}</div>
-        <div style="flex:1">
-          <div style="font-size:1.05rem;line-height:1.5;color:var(--txt)">${esc(c.de)}</div>
-        </div>
-      </div>
-    </div>`).join('');
-  document.getElementById('pos-custom-card').style.display='block';
-}
-
-window._selPosIdx=null;
-function selectPos(i){
-  window._selPosIdx=i;
-  document.querySelectorAll('#pos-list .topic-card').forEach(c=>c.classList.remove('sel'));
-  document.getElementById('pc-'+i).classList.add('sel');
-  document.getElementById('pos-custom-card').style.borderColor='var(--bmid)';
-  document.getElementById('pos-custom-card').style.background='var(--sur)';
-  document.getElementById('btn-pos-confirm').disabled=false;
-}
-
-function selectPosCustom(){
-  window._selPosIdx=-1;
-  document.querySelectorAll('#pos-list .topic-card').forEach(c=>c.classList.remove('sel'));
-  document.getElementById('pos-custom-card').style.borderColor='var(--blu)';
-  document.getElementById('pos-custom-card').style.background='var(--bdim)';
-  if(document.getElementById('pos-custom-text').value.trim().length>=5)
-    document.getElementById('btn-pos-confirm').disabled=false;
-}
-
-function onPosCustomInput(){
-  if(window._selPosIdx===-1){
-    document.getElementById('btn-pos-confirm').disabled=
-      document.getElementById('pos-custom-text').value.trim().length<5;
-  }
-}
-
-function confirmPosition(){
-  const idx=window._selPosIdx;
-  if(idx===null||idx===undefined)return;
-  let text='';
-  if(idx===-1){
-    text=document.getElementById('pos-custom-text').value.trim();
-    if(text.length<5){toast('Bitte mindestens 5 Zeichen eingeben','terr');return;}
-  } else {
-    text=G.positionCards[idx]?.de||'';
-  }
-  G.mySelection={cardIdx:idx,text};
-  // Send selection notification to host (or handle locally if host)
-  const m={type:'POS_SELECTED',id:G.myId,cardIdx:idx,text};
-  if(G.isHost){
-    handlePosSelected(G.myId,idx,text);
-  } else {
-    gsend(m);
-  }
-  // Show done state
-  document.getElementById('btn-pos-confirm').style.display='none';
-  document.getElementById('pos-done-msg').style.display='block';
-  // Disable all cards
-  document.querySelectorAll('#pos-list .topic-card').forEach(c=>{c.style.pointerEvents='none';c.style.opacity='.6';});
-  document.getElementById('pos-custom-card').style.pointerEvents='none';
-  document.getElementById('pos-custom-card').style.opacity='.6';
-  // Host goes to pwait screen to see checklist
-  if(G.isHost) setTimeout(()=>{goTo('s-pwait');renderPWait();},800);
-}
-
-// Host tracks selections
-function handlePosSelected(playerId,cardIdx,text){
-  G.selections[playerId]={cardIdx,text};
-  // If host is on pwait screen, update it
-  renderPWait();
-  // Check if all picked
-  if(Object.keys(G.selections).length>=G.players.length){
-    document.getElementById('btn-pw-next').disabled=false;
-  }
-  // Broadcast selection count (not content) so guests know progress
-  hcast({type:'POS_PROGRESS',count:Object.keys(G.selections).length,total:G.players.length});
-}
-
-function renderPWait(){
-  const el=document.getElementById('pw-list');if(!el)return;
-  document.getElementById('pw-topic').textContent=G.topic?.de||'';
-  el.innerHTML=G.players.map(p=>{
-    const done=!!G.selections[p.id];
-    return `<div class="pi ${p.id===G.myId?'me':''}">
-      <div class="pl"><div class="av">${esc(p.name[0].toUpperCase())}</div>
-        <span class="pn">${esc(p.name)}</span></div>
-      <span class="cbdg ${done?'cok':'cwt'}">${done?'✓ Gewählt':'⏳ Wählt…'}</span>
-    </div>`;
-  }).join('');
-  const allDone=Object.keys(G.selections).length>=G.players.length;
-  document.getElementById('btn-pw-next').disabled=!allDone;
-}
-
-// If host has already selected their own position, show pwait screen
-function showPWaitIfHost(){
-  if(!G.isHost)return;
-  goTo('s-pwait');
-  renderPWait();
-}
-
-// Host reveals all positions
-function revealAllPositions(){
-  if(!G.isHost)return;
-  // Build full selections with names
-  const sel={};
-  G.players.forEach(p=>{
-    const s=G.selections[p.id];
-    if(s){
-      sel[p.id]={cardIdx:s.cardIdx,text:s.text,name:p.name};
-    }
-  });
-  G.selections=sel;
-  hcast({type:'ALL_REVEAL',selections:sel,topic:G.topic});
-  showReveal();
-}
-
-function showReveal(){
-  goTo('s-reveal');
-  document.getElementById('rv-topic').textContent=G.topic?.de||'';
-  const sel=G.selections;
-  const cards=G.positionCards||[];
-  let html='';
-  G.players.forEach(p=>{
-    const s=sel[p.id];
-    if(!s)return;
-    const isCustom=s.cardIdx===-1;
-    const cardLabel=isCustom?'Eigene Position':'Position '+(s.cardIdx+1);
-    html+=`<div class="card fi" style="border-left:3px solid var(--blu);margin-bottom:10px">
+  const {pro,contra}=G.positions;
+  if(!pro||!contra)return;
+  const proName=G.players.find(p=>p.id===pro.playerId)?.name||'?';
+  const contraName=G.players.find(p=>p.id===contra.playerId)?.name||'?';
+  document.getElementById('pos-list').innerHTML=`
+    <div class="topic-card" style="border-left:3px solid var(--grn);margin-bottom:10px">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
-        <div class="av" style="width:28px;height:28px;font-size:.72rem">${esc(p.name[0].toUpperCase())}</div>
+        <div class="av" style="width:28px;height:28px;font-size:.72rem">${esc(proName[0].toUpperCase())}</div>
         <div>
-          <div style="font-size:1rem;font-weight:600;color:var(--txt)">${esc(p.name)}${p.id===G.myId?' (du)':''}</div>
-          <div style="font-size:.72rem;color:var(--blu)">${esc(cardLabel)}</div>
+          <div style="font-size:1rem;font-weight:600;color:var(--txt)">${esc(proName)}${pro.playerId===G.myId?' (du)':''}</div>
+          <div style="font-size:.72rem;color:var(--grn)">Pro</div>
         </div>
       </div>
-      <div style="font-size:1rem;line-height:1.5;color:var(--tmid)">${esc(s.text)}</div>
+      <div style="font-size:.95rem;line-height:1.5;color:var(--tmid)">${esc(pro.de)}</div>
+    </div>
+    <div class="topic-card" style="border-left:3px solid var(--red);margin-bottom:10px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+        <div class="av" style="width:28px;height:28px;font-size:.72rem">${esc(contraName[0].toUpperCase())}</div>
+        <div>
+          <div style="font-size:1rem;font-weight:600;color:var(--txt)">${esc(contraName)}${contra.playerId===G.myId?' (du)':''}</div>
+          <div style="font-size:.72rem;color:var(--red)">Contra</div>
+        </div>
+      </div>
+      <div style="font-size:.95rem;line-height:1.5;color:var(--tmid)">${esc(contra.de)}</div>
     </div>`;
-  });
-  document.getElementById('rv-list').innerHTML=html;
-  // Host sees start discussion button, guests wait
-  document.getElementById('rv-ctrl').style.display=G.isHost?'block':'none';
-  document.getElementById('rv-gwait').style.display=G.isHost?'none':'block';
+  document.getElementById('pos-ctrl').style.display=G.isHost?'block':'none';
+  document.getElementById('pos-gwait').style.display=G.isHost?'none':'block';
 }
 
-// Build discussion order: starting from player after Themengeber, Themengeber goes last
+// Build discussion order: Pro → Contra → Pro → Contra (two rounds)
 function buildDiscussOrder(){
-  const order=[];
-  const n=G.players.length;
-  for(let i=1;i<=n;i++){
-    order.push(G.players[(G.themengeberIdx+i)%n].id);
-  }
-  return order;
+  const proId=G.positions?.pro?.playerId;
+  const contraId=G.positions?.contra?.playerId;
+  if(!proId||!contraId)return [];
+  return [proId,contraId,proId,contraId];
 }
 
 function startDiscussion(){
   if(!G.isHost)return;
   G.discussOrder=buildDiscussOrder();
+  if(!G.discussOrder.length)return;
   G.activeDiscIdx=0;
   const speakerId=G.discussOrder[0];
-  const sel=G.selections[speakerId];
+  const side=G.positions.pro.playerId===speakerId?'pro':'contra';
+  const sideText=side==='pro'?G.positions.pro.de:G.positions.contra.de;
   const m={type:'ACTIVE_SPEAKER',id:speakerId,order:1,total:G.discussOrder.length,
-    posText:sel?.text||'',topic:G.topic?.de||''};
+    posText:sideText,topic:G.topic?.de||'',side};
   hcast(m);
   showDiscussionScreen(m);
 }
@@ -1477,6 +1303,11 @@ function showDiscussionScreen(m){
   document.getElementById('dc-tot').textContent=m.total||G.players.length;
   document.getElementById('dc-pg').style.width=((m.order||1)/(m.total||G.players.length)*100)+'%';
   document.getElementById('dc-pos-de').textContent=m.posText||'';
+  const sideEl=document.getElementById('dc-side');
+  if(sideEl){
+    sideEl.textContent=m.side==='pro'?'Pro':(m.side==='contra'?'Contra':'');
+    sideEl.style.color=m.side==='pro'?'var(--grn)':'var(--red)';
+  }
   // Store current speaker info
   G._currentSpeakerId=m.id;
   G.activeDiscIdx=(m.order||1)-1;
@@ -1500,9 +1331,10 @@ function handleSpeakerDone(){
     showGRoundOver();
   } else {
     const speakerId=G.discussOrder[G.activeDiscIdx];
-    const sel=G.selections[speakerId];
+    const side=G.positions.pro.playerId===speakerId?'pro':'contra';
+    const sideText=side==='pro'?G.positions.pro.de:G.positions.contra.de;
     const m={type:'NEXT_SPEAKER',id:speakerId,order:G.activeDiscIdx+1,total:G.discussOrder.length,
-      posText:sel?.text||'',topic:G.topic?.de||''};
+      posText:sideText,topic:G.topic?.de||'',side};
     hcast(m);
     showDiscussionScreen(m);
   }
@@ -1522,7 +1354,7 @@ function gNextRound(){
   if(!G.isHost)return;
   G.themengeberIdx=(G.themengeberIdx+1)%G.players.length;
   G.gRound++;
-  G.selections={};G.mySelection=null;G.positionCards=[];
+  G.positions={pro:null,contra:null};
   hcast({type:'G_NEXT_ROUND',themengeberIdx:G.themengeberIdx,gRound:G.gRound});
   showGebeOrWait();
 }
@@ -1531,7 +1363,7 @@ function gToLobby(){
   if(!G.isHost)return;
   clearTI();
   G.players.forEach(p=>{p.score=0;p.totalR=0;p.cntR=0;});
-  G.sesWords=[];G.usedTopics=[];selModeVal=null;
+  G.sesWords=[];G.sesTopic=[];selModeVal=null;
   hcast({type:'BACK_TO_LOBBY',players:G.players});
   renderLobby();goTo('s-lobby');
 }
@@ -1565,7 +1397,7 @@ function showOver(){
 
 function playAgain(){
   G.players.forEach(p=>{p.score=0;p.totalR=0;p.cntR=0;});
-  G.sesWords=[];G.sesTopic=[];G.selections={};G.positionCards=[];G.mySelection=null;
+  G.sesWords=[];G.sesTopic=[];G.positions={pro:null,contra:null};
   G.themengeberIdx=0;G.gRound=0;G.discussOrder=[];G.activeDiscIdx=0;
   selModeVal=null;
   if(G.isHost){renderLobby();goTo('s-lobby');}else goTo('s-wait');
@@ -1693,27 +1525,22 @@ Respond ONLY with a valid JSON array of exactly 4 items (no markdown):
   catch(e){window._lastLLMError=e.message;toast('LLM-Fehler: '+e.message,'terr');return null;}
 }
 
-async function genPositionCards(topic){
-  const p=`Generate exactly 5 diverse position cards for a German conversation group discussion.
+async function genPositions(topic){
+  const p=`Generate exactly two opposing perspectives on a German conversation topic.
 Topic: "${topic?.de||''}"
 
-Each card should express 3-5 sentences in German (B1-B2 level), presenting a real opinion that people might hold on this topic.
-The 5 cards must differ significantly from each other — cover the full spectrum of reasonable opinions.
-Do NOT use fake quotes, fake statistics, or attribute opinions to specific people.
-Each card should be a genuine, thoughtful perspective someone might have.
+Each perspective should be 3-5 sentences in German (B1-B2 level), expressing a substantive, genuine opinion someone might hold. The two perspectives must clearly oppose each other (Pro vs Contra). No fake quotes, no fake statistics, no attribution to specific people.
 
-Respond ONLY with a valid JSON array of exactly 5 objects (no markdown):
-[
-  {"de": "Ich denke, dass... Meine Erfahrung zeigt... Deshalb bin ich der Meinung..."},
-  {"de": "..."},
-  {"de": "..."},
-  {"de": "..."},
-  {"de": "..."}
-]`;
+Respond ONLY with valid JSON (no markdown):
+{
+  "pro": "...",
+  "contra": "..."
+}`;
   try{
     const txt=await callLLM(p);
     const parsed=JSON.parse(txt.replace(/```json|```/g,'').trim());
-    return Array.isArray(parsed)?parsed.slice(0,5):null;
+    if(!parsed?.pro||!parsed?.contra)return null;
+    return {pro:String(parsed.pro),contra:String(parsed.contra)};
   }
   catch(e){window._lastLLMError=e.message;toast('LLM-Fehler: '+e.message,'terr');return null;}
 }
