@@ -618,6 +618,38 @@ input:focus{border-color:var(--amid)}input::placeholder{color:var(--tdim)}
 </div>
 </div>
 
+<!-- GESPRÄCHSRUNDE: ASSIGN ROLES (Themengeber) -->
+<div class="scr" id="s-assign">
+<div class="topbar"><div></div><span class="tb" style="color:var(--blu)">Rollen verteilen</span><div></div></div>
+<div class="body">
+  <div style="text-align:center;margin-bottom:10px">
+    <div style="font-size:.68rem;color:var(--tdim);letter-spacing:.12em;text-transform:uppercase;margin-bottom:3px">Thema</div>
+    <div style="font-size:1.05rem;font-weight:600;color:var(--blu)" id="as-topic"></div>
+  </div>
+  <div id="as-host" style="display:none">
+    <div class="card" style="border-left:3px solid var(--grn)">
+      <div style="font-size:.62rem;color:var(--grn);letter-spacing:.15em;text-transform:uppercase;margin-bottom:6px">Pro — wer verteidigt?</div>
+      <div style="font-size:.9rem;line-height:1.5;color:var(--tmid);margin-bottom:8px" id="as-pro-text"></div>
+      <select id="as-pro-sel" onchange="onAssignChange()" style="width:100%;background:var(--sur2);border:1px solid var(--brd);border-radius:var(--rs);padding:10px;font-family:'Outfit',sans-serif;font-size:.9rem;color:var(--txt);outline:none"></select>
+    </div>
+    <div class="card" style="border-left:3px solid var(--red)">
+      <div style="font-size:.62rem;color:var(--red);letter-spacing:.15em;text-transform:uppercase;margin-bottom:6px">Contra — wer verteidigt?</div>
+      <div style="font-size:.9rem;line-height:1.5;color:var(--tmid);margin-bottom:8px" id="as-contra-text"></div>
+      <select id="as-contra-sel" onchange="onAssignChange()" style="width:100%;background:var(--sur2);border:1px solid var(--brd);border-radius:var(--rs);padding:10px;font-family:'Outfit',sans-serif;font-size:.9rem;color:var(--txt);outline:none"></select>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px">
+      <button class="btn bgh" onclick="randomAssign()" style="border-color:var(--bmid);color:var(--blu)">🎲&nbsp; Zufällig</button>
+      <button class="btn bp" id="btn-as-confirm" onclick="confirmAssign()" disabled style="--accent:var(--blu)">✓&nbsp; Bestätigen</button>
+    </div>
+  </div>
+  <div id="as-wait" style="display:block;text-align:center;padding:24px;font-size:.9rem;color:var(--tdim)">
+    <div class="dots"><span>•</span><span>•</span><span>•</span></div>
+    Themengeber weist Rollen zu…
+  </div>
+  <div id="as-err" style="display:none;color:var(--red);font-size:.82rem;text-align:center;padding:12px"></div>
+</div>
+</div>
+
 <!-- GESPRÄCHSRUNDE: DISCUSSION -->
 <div class="scr" id="s-discuss">
 <div class="topbar">
@@ -631,6 +663,16 @@ input:focus{border-color:var(--amid)}input::placeholder{color:var(--tdim)}
     <div style="font-size:.88rem;font-weight:600;color:var(--blu)" id="dc-topic"></div>
   </div>
   <div class="pgbar"><div class="pgfill" id="dc-pg" style="width:0%;background:var(--blu)"></div></div>
+  <div id="dc-roles" style="display:flex;gap:8px;margin:8px 0">
+    <div id="dc-role-pro" style="flex:1;padding:8px 10px;border:1px solid var(--bmid);border-left:3px solid var(--grn);border-radius:var(--rs);background:var(--bdim);transition:opacity .2s,box-shadow .2s">
+      <div style="font-size:.62rem;color:var(--grn);letter-spacing:.12em;text-transform:uppercase">Pro</div>
+      <div style="font-size:.88rem;font-weight:600;color:var(--txt)" id="dc-role-pro-name">—</div>
+    </div>
+    <div id="dc-role-contra" style="flex:1;padding:8px 10px;border:1px solid var(--bmid);border-left:3px solid var(--red);border-radius:var(--rs);background:var(--bdim);transition:opacity .2s,box-shadow .2s">
+      <div style="font-size:.62rem;color:var(--red);letter-spacing:.12em;text-transform:uppercase">Contra</div>
+      <div style="font-size:.88rem;font-weight:600;color:var(--txt)" id="dc-role-contra-name">—</div>
+    </div>
+  </div>
   <div class="abadge" style="--adim:var(--bdim);--amid:var(--bmid);--accent:var(--blu)">
     <div class="albl">Erklärt gerade</div>
     <div class="aname" style="color:var(--blu)" id="dc-speaker">—</div>
@@ -647,6 +689,28 @@ input:focus{border-color:var(--amid)}input::placeholder{color:var(--tdim)}
   </div>
   <div id="dc-wait" style="display:none;text-align:center;padding:14px;font-size:.8rem;color:var(--tdim)">
     Zuhören…
+  </div>
+</div>
+</div>
+
+<!-- GESPRÄCHSRUNDE: EXTEND PROMPT (Themengeber decides) -->
+<div class="scr" id="s-extend">
+<div class="topbar"><div></div><span class="tb" style="color:var(--blu)">Diskussion fortsetzen?</span><div></div></div>
+<div class="body">
+  <div style="text-align:center;padding:18px 0">
+    <div style="font-size:2.2rem">🤔</div>
+    <div style="font-family:'Playfair Display',serif;font-size:1.2rem;font-weight:700;color:var(--blu);margin-top:8px">Soll die Diskussion weitergehen?</div>
+  </div>
+  <div class="card">
+    <div class="ct" style="color:var(--blu)">Thema</div>
+    <div style="font-size:1rem;color:var(--txt);line-height:1.4" id="ex-topic"></div>
+  </div>
+  <div id="ex-mod" style="display:none;gap:10px;margin-top:8px">
+    <button class="btn bp" onclick="gExtendRound()" style="--accent:var(--blu);margin-bottom:8px">▶️&nbsp; Noch eine Runde</button>
+    <button class="btn bgh" onclick="gEndRound()" style="border-color:var(--bmid);color:var(--blu)">⏹&nbsp; Runde beenden</button>
+  </div>
+  <div id="ex-wait" style="display:none;text-align:center;padding:14px;font-size:.82rem;color:var(--tdim)">
+    <div class="dots"><span>•</span><span>•</span><span>•</span></div>Themengeber entscheidet…
   </div>
 </div>
 </div>
@@ -829,6 +893,17 @@ function onGuest(c,m){
     handleSpeakerDone();
   } else if(m.type==='REQUEST_REGEN_TOPICS'){
     genAndSendTopics();
+  } else if(m.type==='GEBER_ASSIGN'){
+    if(m.positions?.pro&&m.positions?.contra){
+      G.positions=m.positions;
+      hcast({type:'POSITIONS_ASSIGNED',positions:G.positions,topic:G.topic});
+      goTo('s-positions');
+      renderPositions();
+    }
+  } else if(m.type==='GEBER_EXTEND'){
+    handleExtendRound();
+  } else if(m.type==='GEBER_END'){
+    handleEndRound();
   }
 }
 
@@ -842,7 +917,24 @@ function onHost(m){
     case 'WORT_RESULT':G.word=m.word;G.players=m.players;if(cfg.hist&&m.word)addUsed(m.word);showWortResult(m);break;
     case 'NEXT_WORT':G.di=m.di;G.round=m.round;G.players=m.players;beginWortRound();break;
     case 'TOPIC_CHOSEN':G.topic=m.topic;showPositionCardsScreen(m.topic);break;
-    case 'POSITIONS_ASSIGNED':G.positions=m.positions;G.topic=m.topic;renderPositions();break;
+    case 'POSITIONS_ASSIGNED':
+      G.positions=m.positions;
+      G.topic=m.topic;
+      goTo('s-positions');
+      renderPositions();
+      break;
+    case 'POSITIONS_GENERATED':
+      if(G.amThemengeber()&&!G.isHost){
+        showAssignUI({pro:m.pro,contra:m.contra});
+      }
+      break;
+    case 'EXTEND_PROMPT':
+      G.topic=G.topic||{de:m.topic};
+      showExtendScreen();
+      break;
+    case 'EXTEND_ROUND':
+      if(Array.isArray(m.extraPair))G.discussOrder=(G.discussOrder||[]).concat(m.extraPair);
+      break;
     case 'TOPICS_OFFERED':
       if(G.amThemengeber()&&!G.isHost&&m.gRound===G.gRound){
         if(m.error)renderTopicsResult(null,m.error);
@@ -1133,6 +1225,7 @@ function wortToLobby(){
 // Show Themengeber screen or waiting screen depending on role
 function showGebeOrWait(){
   G.positions={pro:null,contra:null};
+  G._pendingPositions=null;
   if(G.amThemengeber()){
     document.getElementById('ts-rnum').textContent=G.gRound;
     goTo('s-topics');loadTopics();
@@ -1245,29 +1338,94 @@ function handleGeberTopicChosen(topic){
 async function showPositionCardsScreen(topic){
   G.topic=topic;
   G.positions={pro:null,contra:null};
-  document.getElementById('pos-topic').textContent=topic?.de||'';
-  document.getElementById('pos-list').innerHTML='';
-  document.getElementById('pos-ctrl').style.display='none';
-  document.getElementById('pos-gwait').style.display='none';
-  goTo('s-positions');
-
-  if(G.isHost){
+  G._pendingPositions=null;
+  if(G.amThemengeber()){
+    document.getElementById('as-topic').textContent=topic?.de||'';
+    document.getElementById('as-host').style.display='none';
+    document.getElementById('as-wait').style.display='block';
+    document.getElementById('as-err').style.display='none';
+    goTo('s-assign');
+  } else {
+    document.getElementById('pos-topic').textContent=topic?.de||'';
+    document.getElementById('pos-list').innerHTML='';
     document.getElementById('pos-load').style.display='block';
+    document.getElementById('pos-ctrl').style.display='none';
+    document.getElementById('pos-gwait').style.display='none';
+    goTo('s-positions');
+  }
+  if(G.isHost){
     const res=await genPositions(topic);
     if(!res){
-      document.getElementById('pos-load').innerHTML=`<div style="color:var(--red);font-size:.82rem;text-align:center;padding:12px">❌ Fehler bei der Generierung der Positionen</div>`;
+      if(G.amThemengeber()){
+        document.getElementById('as-wait').style.display='none';
+        const err=document.getElementById('as-err');
+        err.style.display='block';
+        err.innerHTML='❌ Fehler bei der Generierung der Positionen';
+      } else {
+        document.getElementById('pos-load').innerHTML=`<div style="color:var(--red);font-size:.82rem;text-align:center;padding:12px">❌ Fehler bei der Generierung der Positionen</div>`;
+      }
       return;
     }
-    const candidates=G.players.filter((_,i)=>i!==G.themengeberIdx);
-    const shuffled=[...candidates].sort(()=>Math.random()-0.5);
-    G.positions={
-      pro:{de:res.pro,playerId:shuffled[0].id},
-      contra:{de:res.contra,playerId:shuffled[1].id}
-    };
-    hcast({type:'POSITIONS_ASSIGNED',positions:G.positions,topic});
+    G._pendingPositions={pro:res.pro,contra:res.contra};
+    if(G.amThemengeber()){
+      showAssignUI(res);
+    } else {
+      hcast({type:'POSITIONS_GENERATED',pro:res.pro,contra:res.contra});
+    }
+  }
+}
+
+function showAssignUI(positions){
+  G._pendingPositions={pro:positions.pro,contra:positions.contra};
+  document.getElementById('as-topic').textContent=G.topic?.de||'';
+  document.getElementById('as-pro-text').textContent=positions.pro;
+  document.getElementById('as-contra-text').textContent=positions.contra;
+  const candidates=G.players.filter((_,i)=>i!==G.themengeberIdx);
+  const opts='<option value="">— wählen —</option>'+candidates.map(p=>`<option value="${esc(p.id)}">${esc(p.name)}</option>`).join('');
+  const proSel=document.getElementById('as-pro-sel');
+  const contraSel=document.getElementById('as-contra-sel');
+  proSel.innerHTML=opts;contraSel.innerHTML=opts;
+  proSel.value='';contraSel.value='';
+  document.getElementById('btn-as-confirm').disabled=true;
+  document.getElementById('as-wait').style.display='none';
+  document.getElementById('as-err').style.display='none';
+  document.getElementById('as-host').style.display='block';
+}
+
+function onAssignChange(){
+  const pro=document.getElementById('as-pro-sel').value;
+  const contra=document.getElementById('as-contra-sel').value;
+  document.getElementById('btn-as-confirm').disabled=!pro||!contra||pro===contra;
+}
+
+function randomAssign(){
+  const candidates=G.players.filter((_,i)=>i!==G.themengeberIdx);
+  if(candidates.length<2)return;
+  const shuffled=[...candidates].sort(()=>Math.random()-0.5);
+  document.getElementById('as-pro-sel').value=shuffled[0].id;
+  document.getElementById('as-contra-sel').value=shuffled[1].id;
+  onAssignChange();
+}
+
+function confirmAssign(){
+  const proId=document.getElementById('as-pro-sel').value;
+  const contraId=document.getElementById('as-contra-sel').value;
+  if(!proId||!contraId||proId===contraId)return;
+  if(!G._pendingPositions){toast('Positionen noch nicht geladen','terr');return;}
+  const positions={
+    pro:{de:G._pendingPositions.pro,playerId:proId},
+    contra:{de:G._pendingPositions.contra,playerId:contraId}
+  };
+  if(G.isHost){
+    G.positions=positions;
+    hcast({type:'POSITIONS_ASSIGNED',positions,topic:G.topic});
+    goTo('s-positions');
     renderPositions();
   } else {
-    document.getElementById('pos-load').style.display='block';
+    gsend({type:'GEBER_ASSIGN',positions});
+    document.getElementById('btn-as-confirm').disabled=true;
+    document.getElementById('as-host').style.display='none';
+    document.getElementById('as-wait').style.display='block';
   }
 }
 
@@ -1339,6 +1497,19 @@ function showDiscussionScreen(m){
     sideEl.textContent=m.side==='pro'?'Pro':(m.side==='contra'?'Contra':'');
     sideEl.style.color=m.side==='pro'?'var(--grn)':'var(--red)';
   }
+  const proRole=G.players.find(p=>p.id===G.positions?.pro?.playerId)?.name||'—';
+  const contraRole=G.players.find(p=>p.id===G.positions?.contra?.playerId)?.name||'—';
+  document.getElementById('dc-role-pro-name').textContent=proRole;
+  document.getElementById('dc-role-contra-name').textContent=contraRole;
+  const proEl=document.getElementById('dc-role-pro');
+  const contraEl=document.getElementById('dc-role-contra');
+  if(proEl&&contraEl){
+    const isPro=m.side==='pro';
+    proEl.style.opacity=isPro?'1':'0.45';
+    proEl.style.boxShadow=isPro?'0 0 0 2px var(--grn)':'none';
+    contraEl.style.opacity=isPro?'0.45':'1';
+    contraEl.style.boxShadow=isPro?'none':'0 0 0 2px var(--red)';
+  }
   // Store current speaker info
   G._currentSpeakerId=m.id;
   G.activeDiscIdx=(m.order||1)-1;
@@ -1357,9 +1528,9 @@ function handleSpeakerDone(){
   if(!G.isHost)return;
   G.activeDiscIdx++;
   if(G.activeDiscIdx>=G.discussOrder.length){
-    // All done — round over
-    hcast({type:'G_ROUND_OVER'});
-    showGRoundOver();
+    // All speakers done — Themengeber decides whether to extend
+    hcast({type:'EXTEND_PROMPT',topic:G.topic?.de||''});
+    showExtendScreen();
   } else {
     const speakerId=G.discussOrder[G.activeDiscIdx];
     const side=G.positions.pro.playerId===speakerId?'pro':'contra';
@@ -1369,6 +1540,52 @@ function handleSpeakerDone(){
     hcast(m);
     showDiscussionScreen(m);
   }
+}
+
+function showExtendScreen(){
+  goTo('s-extend');
+  document.getElementById('ex-topic').textContent=G.topic?.de||'';
+  if(G.amThemengeber()){
+    document.getElementById('ex-mod').style.display='grid';
+    document.getElementById('ex-wait').style.display='none';
+  } else {
+    document.getElementById('ex-mod').style.display='none';
+    document.getElementById('ex-wait').style.display='block';
+  }
+}
+
+function gExtendRound(){
+  if(!G.amThemengeber())return;
+  if(G.isHost) handleExtendRound();
+  else gsend({type:'GEBER_EXTEND'});
+}
+
+function gEndRound(){
+  if(!G.amThemengeber())return;
+  if(G.isHost) handleEndRound();
+  else gsend({type:'GEBER_END'});
+}
+
+function handleExtendRound(){
+  if(!G.isHost)return;
+  const proId=G.positions?.pro?.playerId;
+  const contraId=G.positions?.contra?.playerId;
+  if(!proId||!contraId)return;
+  G.discussOrder.push(proId,contraId);
+  hcast({type:'EXTEND_ROUND',extraPair:[proId,contraId]});
+  const speakerId=G.discussOrder[G.activeDiscIdx];
+  const side=G.positions.pro.playerId===speakerId?'pro':'contra';
+  const sideText=side==='pro'?G.positions.pro.de:G.positions.contra.de;
+  const m={type:'NEXT_SPEAKER',id:speakerId,order:G.activeDiscIdx+1,total:G.discussOrder.length,
+    posText:sideText,topic:G.topic?.de||'',side};
+  hcast(m);
+  showDiscussionScreen(m);
+}
+
+function handleEndRound(){
+  if(!G.isHost)return;
+  hcast({type:'G_ROUND_OVER'});
+  showGRoundOver();
 }
 
 function showGRoundOver(){
@@ -1386,6 +1603,7 @@ function gNextRound(){
   G.themengeberIdx=(G.themengeberIdx+1)%G.players.length;
   G.gRound++;
   G.positions={pro:null,contra:null};
+  G._pendingPositions=null;
   hcast({type:'G_NEXT_ROUND',themengeberIdx:G.themengeberIdx,gRound:G.gRound});
   showGebeOrWait();
 }
@@ -1394,7 +1612,7 @@ function gToLobby(){
   if(!G.isHost)return;
   clearTI();
   G.players.forEach(p=>{p.score=0;p.totalR=0;p.cntR=0;});
-  G.sesWords=[];G.sesTopic=[];selModeVal=null;
+  G.sesWords=[];G.sesTopic=[];G.positions={pro:null,contra:null};G._pendingPositions=null;selModeVal=null;
   hcast({type:'BACK_TO_LOBBY',players:G.players});
   renderLobby();goTo('s-lobby');
 }
@@ -1429,6 +1647,7 @@ function showOver(){
 function playAgain(){
   G.players.forEach(p=>{p.score=0;p.totalR=0;p.cntR=0;});
   G.sesWords=[];G.sesTopic=[];G.positions={pro:null,contra:null};
+  G._pendingPositions=null;
   G.themengeberIdx=0;G.gRound=0;G.discussOrder=[];G.activeDiscIdx=0;
   selModeVal=null;
   if(G.isHost){renderLobby();goTo('s-lobby');}else goTo('s-wait');
