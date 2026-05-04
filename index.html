@@ -827,6 +827,8 @@ function onGuest(c,m){
   } else if(m.type==='SPEAKER_DONE'){
     // Active speaker (guest) finished — host advances
     handleSpeakerDone();
+  } else if(m.type==='REQUEST_REGEN_TOPICS'){
+    genAndSendTopics();
   }
 }
 
@@ -841,6 +843,12 @@ function onHost(m){
     case 'NEXT_WORT':G.di=m.di;G.round=m.round;G.players=m.players;beginWortRound();break;
     case 'TOPIC_CHOSEN':G.topic=m.topic;showPositionCardsScreen(m.topic);break;
     case 'POSITIONS_ASSIGNED':G.positions=m.positions;G.topic=m.topic;renderPositions();break;
+    case 'TOPICS_OFFERED':
+      if(G.amThemengeber()&&!G.isHost&&m.gRound===G.gRound){
+        if(m.error)renderTopicsResult(null,m.error);
+        else renderTopicsResult(m.topics);
+      }
+      break;
     case 'ACTIVE_SPEAKER':showDiscussionScreen(m);break;
     case 'NEXT_SPEAKER':showDiscussionScreen(m);break;
     case 'G_ROUND_OVER':showGRoundOver();break;
@@ -1133,6 +1141,7 @@ function showGebeOrWait(){
     const geber=G.players[G.themengeberIdx];
     document.getElementById('tw-geber').textContent=geber?esc(geber.name):'—';
     renderTWait();
+    if(G.isHost) genAndSendTopics();
   }
 }
 
@@ -1144,12 +1153,19 @@ async function loadTopics(){
   window._selTopic=null;
   document.getElementById('ts-custom').value='';
   document.getElementById('btn-custom-sel').disabled=true;
-  const topics=await genTopics();
+  if(G.isHost){
+    const topics=await genTopics();
+    renderTopicsResult(topics);
+  }
+  // else: guest-Themengeber waits for TOPICS_OFFERED from host
+}
+
+function renderTopicsResult(topics,errMsg){
   document.getElementById('ts-load').style.display='none';
   if(!topics?.length){
-    const errMsg=window._lastLLMError||'Unbekannter Fehler';
+    const msg=errMsg||window._lastLLMError||'Unbekannter Fehler';
     document.getElementById('ts-list').innerHTML=`<div style="color:var(--red);font-size:.82rem;text-align:center;padding:12px;line-height:1.6">
-      ❌ Fehler beim Laden<br><span style="font-size:.74rem;opacity:.8">${esc(errMsg)}</span>
+      ❌ Fehler beim Laden<br><span style="font-size:.74rem;opacity:.8">${esc(msg)}</span>
       <br><span style="font-size:.72rem;color:var(--tdim)">Prüfe LLM-Einstellungen (⚙️) oder gib eigenes Thema ein</span></div>`;
     return;
   }
@@ -1161,7 +1177,22 @@ async function loadTopics(){
   document.getElementById('btn-regen').style.display='block';
 }
 
-async function regenTopics(){await loadTopics();}
+async function regenTopics(){
+  if(G.isHost){
+    await loadTopics();
+  } else {
+    document.getElementById('ts-load').style.display='block';
+    document.getElementById('ts-list').innerHTML='';
+    document.getElementById('btn-regen').style.display='none';
+    gsend({type:'REQUEST_REGEN_TOPICS'});
+  }
+}
+
+async function genAndSendTopics(){
+  const topics=await genTopics();
+  const errMsg=topics?.length?null:(window._lastLLMError||'Unbekannter Fehler');
+  hcast({type:'TOPICS_OFFERED',topics:topics||[],error:errMsg,gRound:G.gRound});
+}
 
 function selectTopic(i,el){
   document.querySelectorAll('.topic-card').forEach(c=>c.classList.remove('sel'));
